@@ -56,22 +56,26 @@ function AppContent() {
 
   function handleConfirm(species: Species) {
     const previewUrl = pending?.previewUrl ?? "";
-    const { isNew, points } = registerSpecies(species.id, species.rarity);
 
-    const familySpecies = SPECIES.filter(s => s.family === species.family);
-    const familyTotal = familySpecies.length;
-    const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;
-    const familyFound = isNew ? alreadyFoundInFamily + 1 : alreadyFoundInFamily;
+    const doRegister = (location?: { lat: number; lng: number }) => {
+      const { isNew, points } = registerSpecies(species.id, species.rarity, location);
+      const familySpecies = SPECIES.filter(s => s.family === species.family);
+      const familyTotal = familySpecies.length;
+      const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;
+      const familyFound = isNew ? alreadyFoundInFamily + 1 : alreadyFoundInFamily;
+      setPending(null);
+      setLastCatch({ species, isNew, points, previewUrl, familyFound, familyTotal });
+    };
 
-    setPending(null);
-    setLastCatch({
-      species,
-      isNew,
-      points,
-      previewUrl,
-      familyFound,
-      familyTotal,
-    });
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        pos => doRegister({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => doRegister(), // permission denied or error — register without location
+        { timeout: 5000, maximumAge: 60000 }
+      );
+    } else {
+      doRegister();
+    }
   }
 
   function handleDismiss() {
