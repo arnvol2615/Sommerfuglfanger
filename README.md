@@ -71,3 +71,7 @@ export default defineConfig([
   },
 ])
 ```
+
+## CI Test Branch Note
+
+This line is intentionally added to validate the pull request workflow and required status checks.
