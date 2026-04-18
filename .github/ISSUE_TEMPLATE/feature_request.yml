@@ -1,0 +1,75 @@
+name: Feature request
+description: Forslaa en ny funksjon eller forbedring
+labels:
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Takk for forslaget. Beskriv problemet og hva du vil oppnaa.
+
+        Husk a sjekke AGENTS.md og README.md for prosjektgrenser.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Hvilket problem eller behov loeser denne funksjonen?
+      placeholder: Beskriv dagens utfordring.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Forslag til loesning
+      description: Hvordan ser du for deg funksjonen?
+      placeholder: Beskriv UI, flyt og forventet atferd.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Skriv sjekkbare punkter.
+      placeholder: |
+        - [ ] Kriterium 1
+        - [ ] Kriterium 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Berort omraade
+      options:
+        - login
+        - camera
+        - identification
+        - collection
+        - data/species
+        - build/tooling
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioritet
+      options:
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Sikkerhets- og prosjektkrav
+      options:
+        - label: Forslaget endrer ikke species IDs eller taxon mapping uten eksplisitt avklaring
+          required: true
+        - label: Forslaget reduserer ikke kvalitetsterskel i vision-logikken uten begrunnelse
+          required: true

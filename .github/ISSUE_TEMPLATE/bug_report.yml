@@ -1,0 +1,82 @@
+name: Bug report
+description: Rapporter en feil i appen
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Takk for rapporten. Gi konkrete steg og forventet resultat.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Kort beskrivelse
+      placeholder: Hva er problemet?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Hvor skjer feilen?
+      options:
+        - login
+        - camera
+        - identification
+        - collection
+        - build/tooling
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steg for a reprodusere
+      placeholder: |
+        1. Gaa til ...
+        2. Trykk paa ...
+        3. Se feil ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Forventet resultat
+      placeholder: Hva burde skjedd?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Faktisk resultat
+      placeholder: Hva skjedde i stedet?
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Miljo
+      description: Nettleser, enhet og OS
+      placeholder: eksempel: Chrome 135, Android 15
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Feilmeldinger/logg
+      description: Lim inn relevante feilmeldinger eller API-responser
+      render: shell
+
+  - type: checkboxes
+    id: data-risk
+    attributes:
+      label: Data og regressjonsrisiko
+      options:
+        - label: Feilen kan paavirke localStorage-data (inat_jwt eller sommerfuglfanger_v1)
+        - label: Feilen kan paavirke species mapping eller poengberegning
