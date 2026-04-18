@@ -99,21 +99,21 @@ function AppContent() {
             onClick={() => setTab("camera")}
             className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "camera" ? "text-green-700" : "text-gray-400")}
           >
-            <span className="text-2xl">??</span>
+            <span className="text-2xl">📷</span>
             Kamera
           </button>
           <button
             onClick={() => setTab("collection")}
             className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "collection" ? "text-green-700" : "text-gray-400")}
           >
-            <span className="text-2xl">??</span>
+            <span className="text-2xl">🦋</span>
             Samling
           </button>
           <button
             onClick={logout}
             className="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium text-gray-400"
           >
-            <span className="text-2xl">??</span>
+            <span className="text-2xl">🚪</span>
             Logg ut
           </button>
         </nav>
