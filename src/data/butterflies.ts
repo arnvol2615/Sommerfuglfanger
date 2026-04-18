@@ -51,7 +51,7 @@ const REDLIST_CATEGORY_BY_SCI_NAME: Record<string, RedListCategory> = {
   'coenonympha tullia': 'LC',
   'colias hecla': 'LC',
   'colias nastes': 'LC',
-  'colias palaeno': 'LC',
+    'colias palaeno': 'LC',
   'cupido minimus': 'LC',
   'erebia disa': 'LC',
   'erebia embla': 'LC',
