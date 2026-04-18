@@ -1,47 +1,43 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useState, useCallback, type ReactNode } from 'react';
 
-const JWT_STORAGE_KEY = 'inat_jwt';
+const SESSION_TOKEN_STORAGE_KEY = 'session_token';
 
 interface AuthState {
-  jwt: string | null;
+  sessionToken: string | null;
   username: string | null;
 }
 
 interface AuthContextValue extends AuthState {
-  setAuth: (jwt: string, username: string) => void;
+  setAuth: (sessionToken: string, username: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+// eslint-disable-next-line react-refresh/only-export-components
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuthState] = useState<AuthState>(() => {
-    const jwt = localStorage.getItem(JWT_STORAGE_KEY);
-    return { jwt, username: jwt ? 'deg' : null };
+    const sessionToken = localStorage.getItem(SESSION_TOKEN_STORAGE_KEY);
+    return { sessionToken, username: sessionToken ? 'deg' : null };
   });
 
-  const setAuth = useCallback((jwt: string, username: string) => {
-    localStorage.setItem(JWT_STORAGE_KEY, jwt);
-    setAuthState({ jwt, username });
+  const setAuth = useCallback((sessionToken: string, username: string) => {
+    localStorage.setItem(SESSION_TOKEN_STORAGE_KEY, sessionToken);
+    setAuthState({ sessionToken, username });
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(JWT_STORAGE_KEY);
-    setAuthState({ jwt: null, username: null });
+    localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
+    setAuthState({ sessionToken: null, username: null });
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ ...auth, setAuth, logout, isAuthenticated: Boolean(auth.jwt) }}
+      value={{ ...auth, setAuth, logout, isAuthenticated: Boolean(auth.sessionToken) }}
     >
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-}
