@@ -1,6 +1,48 @@
 import { useState, useEffect } from 'react';
 import type { VisionResult } from '../services/inatVision';
-import type { Species } from '../data/butterflies';
+import type { Rarity, Species } from '../data/butterflies';
+
+function rarityBadgeClasses(rarity: Rarity): string {
+  switch (rarity) {
+    case 'Svaert sjelden':
+      return 'bg-red-100 text-red-800 border-red-200';
+    case 'Sjelden':
+      return 'bg-amber-100 text-amber-800 border-amber-200';
+    case 'Uvanlig':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'Vanlig':
+    default:
+      return 'bg-green-100 text-green-800 border-green-200';
+  }
+}
+
+function rarityBadgeText(rarity: Rarity): string {
+  switch (rarity) {
+    case 'Svaert sjelden':
+      return '👑 4★ Legendarisk';
+    case 'Sjelden':
+      return '💎 3★ Sjelden';
+    case 'Uvanlig':
+      return '✨ 2★ Uvanlig';
+    case 'Vanlig':
+    default:
+      return '🍃 1★ Vanlig';
+  }
+}
+
+function rarityMultiplier(rarity: Rarity): number {
+  switch (rarity) {
+    case 'Svaert sjelden':
+      return 3;
+    case 'Sjelden':
+      return 2;
+    case 'Uvanlig':
+      return 1.5;
+    case 'Vanlig':
+    default:
+      return 1;
+  }
+}
 
 interface IdentificationResultProps {
   results: VisionResult[];
@@ -103,6 +145,11 @@ export function IdentificationResult({
             >
               <div className="font-semibold text-gray-800">{r.species.name_no}</div>
               <div className="text-sm text-gray-400 italic">{r.species.name_sci}</div>
+              <div className="mt-2">
+                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${rarityBadgeClasses(r.species.rarity)}`}>
+                  {rarityBadgeText(r.species.rarity)}
+                </span>
+              </div>
               <div className="text-xs text-green-700 mt-1">
                 Sikkerhet: {Math.round(r.score)}%
               </div>
@@ -125,7 +172,7 @@ export function IdentificationResult({
             disabled={!selected}
             className="flex-1 bg-green-600 disabled:bg-gray-300 text-white font-bold rounded-full py-3 transition-colors"
           >
-            Registrer {selected && `(${Math.round(results.find(r => r.species.id === selected.id)?.score ?? 0)}%)`}
+            Registrer {selected && `(${Math.round(results.find(r => r.species.id === selected.id)?.score ?? 0)}%, +${Math.round(10 * rarityMultiplier(selected.rarity))})`}
           </button>
         )}
       </div>

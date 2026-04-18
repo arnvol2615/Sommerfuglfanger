@@ -64,15 +64,6 @@ Acceptance criteria:
 - Hvert funn viser art, tidspunkt og poeng.
 - Sortering nyeste forst.
 "@ },
-  @{ Title = "Forbedre scorelogikk med bonus for sjeldne arter"; Labels = "gameplay,feature,medium"; Body = @"
-Maal:
-Gjore poengsystemet mer spennende.
-
-Acceptance criteria:
-- Bonusregel dokumentert i README.
-- Poengberegning testet.
-- Ingen endring i eksisterende species-id mapping.
-"@ },
   @{ Title = "Bedre filtrering av usikre treff i identifisering"; Labels = "vision,quality,medium"; Body = @"
 Maal:
 Redusere falske positive treff.

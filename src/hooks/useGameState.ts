@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import type { Rarity } from '../data/butterflies';
 
 export interface FoundEntry {
   speciesId: string;
@@ -19,6 +20,20 @@ const DEFAULT_STATE: GameState = {
 };
 
 const BASE_POINTS = 10;
+
+function getRarityMultiplier(rarity: Rarity): number {
+  switch (rarity) {
+    case 'Svaert sjelden':
+      return 3;
+    case 'Sjelden':
+      return 2;
+    case 'Uvanlig':
+      return 1.5;
+    case 'Vanlig':
+    default:
+      return 1;
+  }
+}
 
 function loadState(): GameState {
   try {
@@ -42,11 +57,11 @@ export function useGameState() {
   }, [state]);
 
   const registerSpecies = useCallback(
-    (speciesId: string): { isNew: boolean; points: number } => {
+    (speciesId: string, rarity: Rarity): { isNew: boolean; points: number } => {
       if (state.foundSpecies[speciesId]) {
         return { isNew: false, points: 0 };
       }
-      const points = BASE_POINTS;
+      const points = Math.round(BASE_POINTS * getRarityMultiplier(rarity));
       setState(prev => ({
         foundSpecies: {
           ...prev.foundSpecies,

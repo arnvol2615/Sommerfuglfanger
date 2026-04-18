@@ -7,6 +7,7 @@ import { CameraCapture } from "./components/CameraCapture";
 import { IdentificationResult } from "./components/IdentificationResult";
 import { FamilyList } from "./components/FamilyList";
 import { LoginScreen } from "./components/LoginScreen";
+import { CatchResultModal } from "./components/CatchResultModal";
 import { scoreImage, type VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
@@ -20,12 +21,21 @@ interface PendingIdentification {
   error: string | null;
 }
 
+interface LastCatch {
+  species: Species;
+  isNew: boolean;
+  points: number;
+  previewUrl: string;
+  familyFound: number;
+  familyTotal: number;
+}
+
 function AppContent() {
   const { isAuthenticated, jwt, logout } = useAuth();
   const { state, registerSpecies } = useGameState();
   const [tab, setTab] = useState<Tab>("camera");
   const [pending, setPending] = useState<PendingIdentification | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [lastCatch, setLastCatch] = useState<LastCatch | null>(null);
 
   if (!isAuthenticated) {
     return <LoginScreen />;
@@ -45,14 +55,23 @@ function AppContent() {
   }
 
   function handleConfirm(species: Species) {
-    const { isNew, points } = registerSpecies(species.id);
+    const previewUrl = pending?.previewUrl ?? "";
+    const { isNew, points } = registerSpecies(species.id, species.rarity);
+
+    const familySpecies = SPECIES.filter(s => s.family === species.family);
+    const familyTotal = familySpecies.length;
+    const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;
+    const familyFound = isNew ? alreadyFoundInFamily + 1 : alreadyFoundInFamily;
+
     setPending(null);
-    if (isNew) {
-      setSuccessMessage("Ny art registrert: " + species.name_no + " +" + points + " stjerner!");
-    } else {
-      setSuccessMessage("Du har allerede registrert " + species.name_no);
-    }
-    setTimeout(() => setSuccessMessage(null), 3000);
+    setLastCatch({
+      species,
+      isNew,
+      points,
+      previewUrl,
+      familyFound,
+      familyTotal,
+    });
   }
 
   function handleDismiss() {
@@ -67,11 +86,6 @@ function AppContent() {
         totalCount={SPECIES.length}
         onCollectionClick={() => { setTab("collection"); setPending(null); }}
       />
-      {successMessage && (
-        <div className="bg-green-100 border border-green-300 text-green-800 text-center font-semibold px-4 py-3 text-sm">
-          {successMessage}
-        </div>
-      )}
       <main className="flex-1 overflow-y-auto">
         {pending ? (
           <IdentificationResult
@@ -117,6 +131,18 @@ function AppContent() {
             Logg ut
           </button>
         </nav>
+      )}
+
+      {lastCatch && (
+        <CatchResultModal
+          species={lastCatch.species}
+          isNew={lastCatch.isNew}
+          points={lastCatch.points}
+          previewUrl={lastCatch.previewUrl}
+          familyFound={lastCatch.familyFound}
+          familyTotal={lastCatch.familyTotal}
+          onClose={() => setLastCatch(null)}
+        />
       )}
     </div>
   );

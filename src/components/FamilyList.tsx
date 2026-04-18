@@ -1,6 +1,34 @@
 import { useState } from 'react';
-import { FAMILIES, SPECIES, type Family } from '../data/butterflies';
+import { FAMILIES, SPECIES, type Family, type Rarity } from '../data/butterflies';
 import type { GameState } from '../hooks/useGameState';
+
+function rarityBadgeClasses(rarity: Rarity): string {
+  switch (rarity) {
+    case 'Svaert sjelden':
+      return 'bg-red-100 text-red-800 border-red-200';
+    case 'Sjelden':
+      return 'bg-amber-100 text-amber-800 border-amber-200';
+    case 'Uvanlig':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'Vanlig':
+    default:
+      return 'bg-green-100 text-green-800 border-green-200';
+  }
+}
+
+function rarityBadgeText(rarity: Rarity): string {
+  switch (rarity) {
+    case 'Svaert sjelden':
+      return '👑 4★ Legendarisk';
+    case 'Sjelden':
+      return '💎 3★ Sjelden';
+    case 'Uvanlig':
+      return '✨ 2★ Uvanlig';
+    case 'Vanlig':
+    default:
+      return '🍃 1★ Vanlig';
+  }
+}
 
 interface FamilyListProps {
   gameState: GameState;
@@ -59,6 +87,11 @@ export function FamilyList({ gameState }: FamilyListProps) {
                           {species.name_no}
                         </div>
                         <div className="text-xs text-gray-400 italic">{species.name_sci}</div>
+                        <div className="mt-1">
+                          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${rarityBadgeClasses(species.rarity)}`}>
+                            {rarityBadgeText(species.rarity)}
+                          </span>
+                        </div>
                       </div>
                       {found ? (
                         <span className="text-green-600 text-xl" aria-label="Funnet">✓</span>
