@@ -120,6 +120,28 @@ Acceptance criteria:
 - Viser prosent fullfort per familie.
 - Oppdateres i sanntid ved nye funn.
 
+### 12) EXIF-sjekk for aa redusere juksing med skjermbilder
+Labels: gameplay, quality, low
+
+Maal:
+Legg til et ekstra lag mot aa registrere arter ved aa fotografere skjermbilder.
+
+Bakgrunn:
+GPS-koordinater er ikke tilstrekkelig som jukse-sjekk fordi WiFi-posisjonering fungerer innendors.
+EXIF-metadata (kameramodell, blenderaapning, eksponeringstid) er typisk til stede i ekte kamerabilder men mangler i skjermbilder.
+
+Forslag til implementasjon:
+- Bruk biblioteket `exifr` til aa lese EXIF fra opplastet bilde.
+- Hvis `Make`, `Model`, `ExposureTime` eller `FNumber` mangler, vis en advarsel til bruker.
+- Blokker IKKE registrering -- behandle som en myk advarsel (aerlighetssjekk, ikke hard sperring).
+- Logg tilstedevaer/fravaar av EXIF som en del av FoundEntry for fremtidig analyse.
+
+Acceptance criteria:
+- Bildet leses med exifr uten aa blokkere confirm-flyten.
+- Manglende kamera-EXIF vises som gul advarsel i IdentificationResult eller CatchResultModal.
+- FoundEntry lagrer et `hasExif: boolean` felt.
+- Ingen ekstra nettverksforesporsler -- kun client-side.
+
 ### 11) Sett opp issue templates i GitHub
 Labels: process, docs, low
 
