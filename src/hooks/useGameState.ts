@@ -1,10 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Rarity } from '../data/butterflies';
 
+export interface GpsLocation {
+  lat: number;
+  lng: number;
+}
+
 export interface FoundEntry {
   speciesId: string;
   foundAt: number; // timestamp
   points: number;
+  location?: GpsLocation;
 }
 
 export interface GameState {
@@ -57,7 +63,7 @@ export function useGameState() {
   }, [state]);
 
   const registerSpecies = useCallback(
-    (speciesId: string, rarity: Rarity): { isNew: boolean; points: number } => {
+    (speciesId: string, rarity: Rarity, location?: GpsLocation): { isNew: boolean; points: number } => {
       if (state.foundSpecies[speciesId]) {
         return { isNew: false, points: 0 };
       }
@@ -65,7 +71,7 @@ export function useGameState() {
       setState(prev => ({
         foundSpecies: {
           ...prev.foundSpecies,
-          [speciesId]: { speciesId, foundAt: Date.now(), points },
+          [speciesId]: { speciesId, foundAt: Date.now(), points, location },
         },
         totalPoints: prev.totalPoints + points,
       }));
