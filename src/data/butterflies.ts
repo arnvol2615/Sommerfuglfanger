@@ -5,6 +5,9 @@ export type Family =
   | 'Riddersommerfugler'
   | 'Bredvinger';
 
+export type RedListCategory = 'CR' | 'EN' | 'VU' | 'NT' | 'LC' | 'DD' | 'NA' | 'NE';
+export type Rarity = 'Svaert sjelden' | 'Sjelden' | 'Uvanlig' | 'Vanlig';
+
 export interface Species {
   id: string;
   name_no: string;
@@ -12,6 +15,8 @@ export interface Species {
   family: Family;
   inatTaxonId: number;
   adbTaxonId: number;
+  redlistCategory: RedListCategory;
+  rarity: Rarity;
 }
 
 export const FAMILIES: { id: Family; name: string; icon: string }[] = [
@@ -22,7 +27,87 @@ export const FAMILIES: { id: Family; name: string; icon: string }[] = [
   { id: 'Bredvinger', name: 'Bredvinger (Hesperiidae)', icon: '🌿' },
 ];
 
-export const SPECIES: Species[] = [
+const REDLIST_CATEGORY_BY_SCI_NAME: Record<string, RedListCategory> = {
+  'aglais io': 'LC',
+  'aglais urticae': 'LC',
+  'agriades aquilo': 'LC',
+  'agriades glandon': 'LC',
+  'anthocharis cardamines': 'LC',
+  'apatura iris': 'NA',
+  'aphantopus hyperantus': 'LC',
+  'araschnia levana': 'NA',
+  'argynnis paphia': 'LC',
+  'aricia artaxerxes': 'LC',
+  'boloria aquilonaris': 'LC',
+  'boloria euphrosyne': 'LC',
+  'boloria freija': 'LC',
+  'boloria frigga': 'LC',
+  'boloria selene': 'LC',
+  'brenthis ino': 'LC',
+  'callophrys rubi': 'LC',
+  'carterocephalus palaemon': 'LC',
+  'celastrina argiolus': 'LC',
+  'coenonympha pamphilus': 'LC',
+  'coenonympha tullia': 'LC',
+  'colias hecla': 'LC',
+  'colias nastes': 'LC',
+  'colias palaeno': 'LC',
+  'cupido minimus': 'LC',
+  'erebia disa': 'LC',
+  'erebia embla': 'LC',
+  'erebia ligea': 'LC',
+  'erynnis tages': 'LC',
+  'euphydryas iduna': 'LC',
+  'favonius quercus': 'LC',
+  'gonepteryx rhamni': 'LC',
+  'hesperia comma': 'LC',
+  'lasiommata maera': 'LC',
+  'lasiommata megera': 'LC',
+  'leptidea juvernica': 'LC',
+  'leptidea sinapis': 'LC',
+  'limenitis populi': 'LC',
+  'lycaena hippothoe': 'LC',
+  'lycaena phlaeas': 'LC',
+  'lycaena virgaureae': 'LC',
+  'maniola jurtina': 'LC',
+  'melitaea athalia': 'LC',
+  'melitaea cinxia': 'CR',
+  'melitaea diamina': 'VU',
+  'nymphalis antiopa': 'LC',
+  'nymphalis c-album': 'LC',
+  'nymphalis polychloros': 'NA',
+  'ochlodes sylvanus': 'LC',
+  'oeneis bore': 'LC',
+  'oeneis jutta': 'LC',
+  'oeneis norna': 'LC',
+  'papilio machaon': 'LC',
+  'pararge aegeria': 'LC',
+  'parnassius apollo': 'NT',
+  'parnassius mnemosyne': 'NT',
+  'pieris brassicae': 'LC',
+  'pieris napi': 'LC',
+  'pieris rapae': 'LC',
+  'plebejus argus': 'LC',
+  'plebejus idas': 'LC',
+  'polygonia c-album': 'LC',
+  'polyommatus icarus': 'LC',
+  'pontia edusa': 'NA',
+  'pyrgus centaureae': 'LC',
+  'pyrgus malvae': 'LC',
+  'thecla betulae': 'LC',
+  'thymelicus lineola': 'LC',
+  'vanessa atalanta': 'LC',
+  'vanessa cardui': 'LC',
+};
+
+function toRarity(category: RedListCategory): Rarity {
+  if (category === 'CR' || category === 'EN' || category === 'VU') return 'Svaert sjelden';
+  if (category === 'NT') return 'Sjelden';
+  if (category === 'LC') return 'Vanlig';
+  return 'Uvanlig';
+}
+
+const BASE_SPECIES: Omit<Species, 'redlistCategory' | 'rarity'>[] = [
   // Edelsteiner / Nymphalidae
   { id: 'aglais-urticae', name_no: 'Neslesommerfugl', name_sci: 'Aglais urticae', family: 'Edelsteiner', inatTaxonId: 55626, adbTaxonId: 29854 },
   { id: 'aglais-io', name_no: 'Dagpåfuglsøye', name_sci: 'Aglais io', family: 'Edelsteiner', inatTaxonId: 55619, adbTaxonId: 29853 },
@@ -113,6 +198,15 @@ export const SPECIES: Species[] = [
   { id: 'pyrgus-malvae', name_no: 'Jordbærbredvinge', name_sci: 'Pyrgus malvae', family: 'Bredvinger', inatTaxonId: 57394, adbTaxonId: 29715 },
   { id: 'pyrgus-centaureae', name_no: 'Nordlig jordbærbredvinge', name_sci: 'Pyrgus centaureae', family: 'Bredvinger', inatTaxonId: 57381, adbTaxonId: 29710 },
 ];
+
+export const SPECIES: Species[] = BASE_SPECIES.map(species => {
+  const redlistCategory = REDLIST_CATEGORY_BY_SCI_NAME[species.name_sci.toLowerCase()] ?? 'NE';
+  return {
+    ...species,
+    redlistCategory,
+    rarity: toRarity(redlistCategory),
+  };
+});
 
 export const SPECIES_BY_ID = Object.fromEntries(SPECIES.map(s => [s.id, s]));
 export const SPECIES_BY_INAT_ID = Object.fromEntries(SPECIES.map(s => [s.inatTaxonId, s]));
