@@ -63,18 +63,7 @@ Acceptance criteria:
 - Hvert funn viser art, tidspunkt og poeng.
 - Sortering nyeste forst.
 
-### 6) Forbedre scorelogikk med bonus for sjeldne arter
-Labels: gameplay, feature, medium
-
-Maal:
-Gjore poengsystemet mer spennende.
-
-Acceptance criteria:
-- Bonusregel dokumentert i README.
-- Poengberegning testet.
-- Ingen endring i eksisterende species-id mapping.
-
-### 7) Bedre filtrering av usikre treff i identifisering
+### 6) Bedre filtrering av usikre treff i identifisering
 Labels: vision, quality, medium
 
 Maal:
@@ -85,7 +74,7 @@ Acceptance criteria:
 - Endring valideres med et lite sett testbilder.
 - Ingen svekkelse av hard constraints i AGENTS.
 
-### 8) Introduser feature-flagg for eksperimentelle endringer
+### 7) Introduser feature-flagg for eksperimentelle endringer
 Labels: architecture, feature, medium
 
 Maal:
@@ -98,7 +87,7 @@ Acceptance criteria:
 
 ## Prioritet Low
 
-### 9) Legg til eksport/import av lokal progresjon
+### 8) Legg til eksport/import av lokal progresjon
 Labels: feature, low
 
 Maal:
@@ -109,7 +98,7 @@ Acceptance criteria:
 - Import validerer format og feilhaandterer ugyldig data.
 - Eksisterende progresjon overskrives kun etter bekreftelse.
 
-### 10) Legg til achievements for milepaeler
+### 9) Legg til achievements for milepaeler
 Labels: gameplay, feature, low
 
 Maal:
@@ -120,7 +109,7 @@ Acceptance criteria:
 - Trigger ved korrekt terskel.
 - Synlig i UI.
 
-### 11) Legg til statistikkpanel per familie
+### 10) Legg til statistikkpanel per familie
 Labels: analytics, feature, low
 
 Maal:
@@ -131,7 +120,7 @@ Acceptance criteria:
 - Viser prosent fullfort per familie.
 - Oppdateres i sanntid ved nye funn.
 
-### 12) Sett opp issue templates i GitHub
+### 11) Sett opp issue templates i GitHub
 Labels: process, docs, low
 
 Maal:
