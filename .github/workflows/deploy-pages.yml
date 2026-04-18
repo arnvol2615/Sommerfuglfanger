@@ -21,10 +21,42 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEYVAULT_NAME: ${{ vars.AZURE_KEYVAULT_NAME }}
+      KEYVAULT_SECRET_NAME: ${{ vars.AZURE_KEYVAULT_SECRET_NAME }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        if: env.KEYVAULT_NAME != '' && env.KEYVAULT_SECRET_NAME != ''
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Fetch iNaturalist Token From Key Vault
+        if: env.KEYVAULT_NAME != '' && env.KEYVAULT_SECRET_NAME != ''
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            TOKEN=$(az keyvault secret show --vault-name "$KEYVAULT_NAME" --name "$KEYVAULT_SECRET_NAME" --query value -o tsv)
+            if [ -z "$TOKEN" ]; then
+              echo "Key Vault secret is empty: $KEYVAULT_SECRET_NAME" >&2
+              exit 1
+            fi
+            echo "::add-mask::$TOKEN"
+            echo "INAT_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Validate Key Vault Setup
+        if: env.KEYVAULT_NAME != '' && env.KEYVAULT_SECRET_NAME != ''
+        run: |
+          if [ -z "$INAT_API_TOKEN" ]; then
+            echo "INAT_API_TOKEN is not available after Key Vault fetch" >&2
+            exit 1
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4

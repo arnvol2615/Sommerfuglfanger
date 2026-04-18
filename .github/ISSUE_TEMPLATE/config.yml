@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project documentation
+    url: https://github.com/arnvol2615/Sommerfuglfanger/blob/main/README.md
+    about: Read project setup and architecture notes
+  - name: Agent handoff guide
+    url: https://github.com/arnvol2615/Sommerfuglfanger/blob/main/AGENTS.md
+    about: Read constraints and definition of done for changes
