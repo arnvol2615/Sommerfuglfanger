@@ -112,17 +112,21 @@ export async function confirmCatch(
 
 export interface LeaderboardRow {
   rank: number;
-  userId: string;
   username: string;
   score: number;
-  validCatchCount: number;
+  valid_catch_count: number;
 }
 
-export async function getLeaderboard(limit = 20): Promise<LeaderboardRow[]> {
-  const { data, error } = await supabase.functions.invoke('leaderboard', {
-    body: { limit },
-  });
-  if (error) throw new Error(error.message ?? 'Leaderboard feilet');
-  const rows = (data as { rows: Omit<LeaderboardRow, 'rank'>[] }).rows;
-  return rows.map((r, i) => ({ ...r, rank: i + 1 }));
+export async function getLeaderboard(limit = 50): Promise<LeaderboardRow[]> {
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/leaderboard?limit=${limit}`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+      },
+    }
+  );
+  const data = (await response.json()) as { rows: Omit<LeaderboardRow, 'rank'>[] } & { error?: string };
+  if (!response.ok) throw new Error(data.error ?? 'Leaderboard feilet');
+  return data.rows.map((r, i) => ({ ...r, rank: i + 1 }));
 }
