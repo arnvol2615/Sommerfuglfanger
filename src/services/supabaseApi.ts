@@ -1,0 +1,128 @@
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+// ── Login ────────────────────────────────────────────────────────────────────
+
+export interface LoginResponse {
+  userId: string;
+  username: string;
+  sessionToken: string;
+}
+
+export async function login(username: string): Promise<LoginResponse> {
+  const { data, error } = await supabase.functions.invoke('login', {
+    body: { username },
+    headers: {}, // Fjern Authorization for public endpoint
+  });
+  if (error) throw new Error(error.message ?? 'Innlogging feilet');
+  return data as LoginResponse;
+}
+
+// ── Identify (get vision results) ────────────────────────────────────────────
+
+import type { VisionResult } from './inatVision';
+
+export interface ScoreImageResponse {
+  accepted: boolean;
+  reason?: string;
+  results: VisionResult[];
+}
+
+export async function scoreImageViaBackend(
+  sessionToken: string,
+  photo: File
+): Promise<ScoreImageResponse> {
+  const form = new FormData();
+  form.append('photo', photo);
+
+  // Use fetch for multipart uploads so browser controls boundary/content-type.
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/identify`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${sessionToken}`,
+    },
+    body: form,
+  });
+
+  const data = (await response.json()) as ScoreImageResponse & { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error ?? 'Identifisering feilet');
+  }
+
+  return data;
+}
+
+// ── Confirm Catch (save to database) ─────────────────────────────────────────
+
+export interface ConfirmCatchResponse {
+  success: boolean;
+  pointsAwarded: number;
+  countedInLeaderboard: boolean;
+  suspicionFlags: string[];
+}
+
+export async function confirmCatch(
+  sessionToken: string,
+  speciesId: string,
+  rarity: string,
+  visionScore: number,
+  options: {
+    lat?: number;
+    lng?: number;
+    hasExif?: boolean;
+    deviceMake?: string;
+    deviceModel?: string;
+  } = {}
+): Promise<ConfirmCatchResponse> {
+  if (!speciesId || !rarity) {
+    throw new Error('Mangler species_id eller rarity i klientdata');
+  }
+
+  const { data, error } = await supabase.functions.invoke('confirm-catch-ts', {
+    body: {
+      species_id: speciesId,
+      speciesId,
+      rarity,
+      vision_score: visionScore,
+      visionScore,
+      lat: options.lat,
+      lng: options.lng,
+      has_exif: options.hasExif,
+      hasExif: options.hasExif,
+      device_make: options.deviceMake,
+      deviceMake: options.deviceMake,
+      device_model: options.deviceModel,
+      deviceModel: options.deviceModel,
+    },
+    headers: { Authorization: `Bearer ${sessionToken}` },
+  });
+  if (error) throw new Error(error.message ?? 'Lagring av catch feilet');
+  return data as ConfirmCatchResponse;
+}
+
+// ── Leaderboard ──────────────────────────────────────────────────────────────
+
+export interface LeaderboardRow {
+  rank: number;
+  userId: string;
+  username: string;
+  score: number;
+  validCatchCount: number;
+}
+
+export async function getLeaderboard(limit = 20): Promise<LeaderboardRow[]> {
+  const { data, error } = await supabase.functions.invoke('leaderboard', {
+    body: { limit },
+  });
+  if (error) throw new Error(error.message ?? 'Leaderboard feilet');
+  const rows = (data as { rows: Omit<LeaderboardRow, 'rank'>[] }).rows;
+  return rows.map((r, i) => ({ ...r, rank: i + 1 }));
+}

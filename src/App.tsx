@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import { useGameState } from "./hooks/useGameState";
 import { ScoreHeader } from "./components/ScoreHeader";
 import { CameraCapture } from "./components/CameraCapture";
@@ -8,7 +9,8 @@ import { IdentificationResult } from "./components/IdentificationResult";
 import { FamilyList } from "./components/FamilyList";
 import { LoginScreen } from "./components/LoginScreen";
 import { CatchResultModal } from "./components/CatchResultModal";
-import { scoreImage, type VisionResult } from "./services/inatVision";
+import { scoreImageViaBackend, confirmCatch } from "./services/supabaseApi";
+import type { VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
 type Tab = "camera" | "collection";
@@ -31,7 +33,7 @@ interface LastCatch {
 }
 
 function AppContent() {
-  const { isAuthenticated, jwt, logout } = useAuth();
+  const { isAuthenticated, sessionToken, logout } = useAuth();
   const { state, registerSpecies } = useGameState();
   const [tab, setTab] = useState<Tab>("camera");
   const [pending, setPending] = useState<PendingIdentification | null>(null);
@@ -44,7 +46,7 @@ function AppContent() {
   async function handleCapture(file: File, previewUrl: string) {
     setPending({ file, previewUrl, results: [], isLoading: true, error: null });
     try {
-      const response = await scoreImage(file, jwt!);
+      const response = await scoreImageViaBackend(sessionToken!, file);
       setPending(prev =>
         prev ? { ...prev, results: response.results, isLoading: false } : null
       );
@@ -54,11 +56,29 @@ function AppContent() {
     }
   }
 
-  function handleConfirm(species: Species) {
+  function handleConfirm(species: Species, visionResult?: VisionResult) {
+    if (!species?.id || !species?.rarity) {
+      console.error('Invalid species payload in handleConfirm:', species);
+      setPending(prev => prev ? { ...prev, error: 'Ugyldig artsdata mottatt. Prøv igjen.' } : null);
+      return;
+    }
+
     const previewUrl = pending?.previewUrl ?? "";
 
     const doRegister = (location?: { lat: number; lng: number }) => {
+      // Register locally
       const { isNew, points } = registerSpecies(species.id, species.rarity, location);
+      
+      // Call backend to save catch with anti-cheat checks
+      confirmCatch(sessionToken!, species.id, species.rarity, visionResult?.score ?? 0, {
+        lat: location?.lat,
+        lng: location?.lng,
+        hasExif: true, // TODO: check EXIF from image metadata
+      }).catch(err => {
+        console.error('Backend catch save failed:', err);
+        // Still show success locally even if backend call fails
+      });
+
       const familySpecies = SPECIES.filter(s => s.family === species.family);
       const familyTotal = familySpecies.length;
       const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;

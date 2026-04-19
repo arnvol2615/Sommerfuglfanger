@@ -47,7 +47,7 @@ function rarityMultiplier(rarity: Rarity): number {
 interface IdentificationResultProps {
   results: VisionResult[];
   previewUrl: string;
-  onConfirm: (species: Species) => void;
+  onConfirm: (species: Species, visionResult?: VisionResult) => void;
   onDismiss: () => void;
   isLoading: boolean;
   error: string | null;
@@ -75,12 +75,13 @@ export function IdentificationResult({
       // Auto-confirm if: only 1 result, or best is 10+ points better than second
       const shouldAutoConfirm = results.length === 1 || (best.score - (secondBest?.score ?? 0)) >= 10;
       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelected(best.species);
       if (shouldAutoConfirm) {
         setIsAutoConfirming(true);
         // Auto-confirm after a brief delay to show the selection
         const timer = setTimeout(() => {
-          onConfirm(best.species);
+          onConfirm(best.species, best);
         }, 800);
         return () => clearTimeout(timer);
       }
@@ -168,7 +169,10 @@ export function IdentificationResult({
         )}
         {!isAutoConfirming && (
           <button
-            onClick={() => selected && onConfirm(selected)}
+            onClick={() => {
+              const visionResult = results.find(r => r.species.id === selected?.id);
+              if (selected) onConfirm(selected, visionResult);
+            }}
             disabled={!selected}
             className="flex-1 bg-green-600 disabled:bg-gray-300 text-white font-bold rounded-full py-3 transition-colors"
           >
