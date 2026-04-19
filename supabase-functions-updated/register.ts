@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.-]{3,32}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 const REGISTER_IP_WINDOW_MINUTES = 60;
 const REGISTER_IP_MAX_ATTEMPTS = 10;
@@ -60,6 +61,15 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const body = await req.json() as { username?: string; password?: string; email?: string };
+    const username = body.username?.trim() ?? "";
+    const password = body.password ?? "";
+    const email = body.email?.trim().toLowerCase() ?? "";
+    const normalizedUsername = username.toLowerCase();
+    const clientIp = getClientIp(req);
+
+    if (!username || !password || !email) {
+      return new Response(JSON.stringify({ error: "Mangler brukernavn, e-post eller passord" }), {
     const body = await req.json() as { username?: string; password?: string };
     const username = body.username?.trim() ?? "";
     const password = body.password ?? "";
@@ -75,6 +85,13 @@ Deno.serve(async (req) => {
 
     if (!USERNAME_REGEX.test(username)) {
       return new Response(JSON.stringify({ error: "Ugyldig brukernavnformat" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return new Response(JSON.stringify({ error: "Ugyldig e-postadresse" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -129,12 +146,33 @@ Deno.serve(async (req) => {
       });
     }
 
+    const { data: existingEmail, error: existingEmailErr } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (existingEmailErr) {
+      return new Response(JSON.stringify({ error: `Databasefeil: ${existingEmailErr.message}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (existingEmail) {
+      return new Response(JSON.stringify({ error: "E-post er allerede i bruk" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const passwordHash = bcrypt.hashSync(password, 12);
 
     const { data: user, error: insertErr } = await supabase
       .from("users")
       .insert({
         username,
+        email,
         password_hash: passwordHash,
         password_updated_at: new Date().toISOString(),
       })

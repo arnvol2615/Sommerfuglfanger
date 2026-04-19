@@ -6,10 +6,15 @@ create extension if not exists "citext";
 create table if not exists users (
   id uuid primary key default gen_random_uuid(),
   username citext unique not null,
+  email text unique,
   password_hash text not null,
   password_updated_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
+
+create unique index if not exists idx_users_email_lower_unique
+  on users ((lower(email)))
+  where email is not null;
 
 alter table users drop constraint if exists users_username_format_check;
 alter table users
@@ -37,6 +42,20 @@ create table if not exists auth_rate_limits (
 
 create index if not exists idx_auth_rate_limits_lookup
   on auth_rate_limits (action, bucket_key, created_at desc);
+
+-- Password reset tokens
+create table if not exists password_reset_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references users(id) on delete cascade,
+  token_hash text not null unique,
+  requested_ip text,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_password_reset_tokens_user_id on password_reset_tokens (user_id);
+create index if not exists idx_password_reset_tokens_expires_at on password_reset_tokens (expires_at);
 
 -- Catches
 create table if not exists catches (

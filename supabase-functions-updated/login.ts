@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
     const body = await req.json() as { username?: string; password?: string };
     const username = body.username?.trim() ?? "";
     const password = body.password ?? "";
+    const normalizedUsername = username.toLowerCase();
     const clientIp = getClientIp(req);
 
     if (!username || !password) {
@@ -85,7 +86,7 @@ Deno.serve(async (req) => {
 
     const [ipFailures, usernameFailures] = await Promise.all([
       countRecentAttempts(supabase, "login_ip_failure", clientIp, LOGIN_IP_WINDOW_MINUTES),
-      countRecentAttempts(supabase, "login_username_failure", username.toLowerCase(), LOGIN_USERNAME_WINDOW_MINUTES),
+      countRecentAttempts(supabase, "login_username_failure", normalizedUsername, LOGIN_USERNAME_WINDOW_MINUTES),
     ]);
 
     if (ipFailures >= LOGIN_IP_MAX_FAILURES || usernameFailures >= LOGIN_USERNAME_MAX_FAILURES) {
@@ -111,6 +112,7 @@ Deno.serve(async (req) => {
     if (!user) {
       await Promise.all([
         recordAttempt(supabase, "login_ip_failure", clientIp),
+        recordAttempt(supabase, "login_username_failure", normalizedUsername),
         recordAttempt(supabase, "login_username_failure", username.toLowerCase()),
       ]);
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
@@ -123,6 +125,7 @@ Deno.serve(async (req) => {
     if (!validPassword) {
       await Promise.all([
         recordAttempt(supabase, "login_ip_failure", clientIp),
+        recordAttempt(supabase, "login_username_failure", normalizedUsername),
         recordAttempt(supabase, "login_username_failure", username.toLowerCase()),
       ]);
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
