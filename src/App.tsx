@@ -9,11 +9,12 @@ import { IdentificationResult } from "./components/IdentificationResult";
 import { FamilyList } from "./components/FamilyList";
 import { LoginScreen } from "./components/LoginScreen";
 import { CatchResultModal } from "./components/CatchResultModal";
+import { Leaderboard } from "./components/Leaderboard";
 import { scoreImageViaBackend, confirmCatch } from "./services/supabaseApi";
 import type { VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
-type Tab = "camera" | "collection";
+type Tab = "camera" | "collection" | "leaderboard";
 
 interface PendingIdentification {
   file: File;
@@ -35,7 +36,7 @@ interface LastCatch {
 }
 
 function AppContent() {
-  const { isAuthenticated, sessionToken, logout } = useAuth();
+  const { isAuthenticated, sessionToken, username, logout } = useAuth();
   const { state, registerSpecies } = useGameState();
   const dailyButterfly = getDailyButterfly();
   const [tab, setTab] = useState<Tab>("camera");
@@ -134,6 +135,8 @@ function AppContent() {
             isLoading={pending.isLoading}
             error={pending.error}
           />
+        ) : tab === "leaderboard" ? (
+          <Leaderboard currentUsername={username} />
         ) : tab === "camera" ? (
           <div className="flex flex-col items-center gap-4 pb-4">
             <CameraCapture onCapture={handleCapture} />
@@ -179,6 +182,13 @@ function AppContent() {
           >
             <span className="text-2xl">🦋</span>
             Samling
+          </button>
+          <button
+            onClick={() => setTab("leaderboard")}
+            className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "leaderboard" ? "text-green-700" : "text-gray-400")}
+          >
+            <span className="text-2xl">🏆</span>
+            Toppliste
           </button>
           <button
             onClick={logout}
