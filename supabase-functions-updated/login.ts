@@ -113,7 +113,6 @@ Deno.serve(async (req) => {
       await Promise.all([
         recordAttempt(supabase, "login_ip_failure", clientIp),
         recordAttempt(supabase, "login_username_failure", normalizedUsername),
-        recordAttempt(supabase, "login_username_failure", username.toLowerCase()),
       ]);
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
         status: 401,
@@ -126,7 +125,6 @@ Deno.serve(async (req) => {
       await Promise.all([
         recordAttempt(supabase, "login_ip_failure", clientIp),
         recordAttempt(supabase, "login_username_failure", normalizedUsername),
-        recordAttempt(supabase, "login_username_failure", username.toLowerCase()),
       ]);
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
         status: 401,
