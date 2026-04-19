@@ -26,6 +26,15 @@ Set these in Supabase Edge Functions secrets:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `INAT_API_TOKEN` (used by `identify`)
 
+## Required database changes
+
+Before deploying `login` and `register`, apply the latest SQL so the `auth_rate_limits` table exists.
+
+Use one of:
+
+- `DATABASE_SCHEMA.sql`
+- `supabase-functions-updated/tables.sql`
+
 ## Quick smoke tests
 
 1. Call `register` with `{ "username": "testuser", "password": "testpassord123" }`.
