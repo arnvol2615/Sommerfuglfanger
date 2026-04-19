@@ -15,6 +15,10 @@ Deliver safe, small, verifiable changes to Sommerfuglfanger without breaking log
 - Vision API integration: `src/services/inatVision.ts`
 - Species source of truth: `src/data/butterflies.ts`
 
+## Taxonomy Reference
+
+- Dagsommerfugler (Papilionoidea): https://artsdatabanken.no/arter/takson/84474
+
 ## Hard Constraints
 
 - Keep species IDs and taxon mappings stable unless explicitly requested.

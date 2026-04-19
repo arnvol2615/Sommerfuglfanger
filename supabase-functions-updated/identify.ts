@@ -27,6 +27,8 @@ const SPECIES: Species[] = [
   { id: 'vanessa-cardui', name_no: 'Tistelsommerfugl', name_sci: 'Vanessa cardui', family: 'Nymfevinger', inatTaxonId: 49134, adbTaxonId: 29858, redlistCategory: 'LC', rarity: 'Vanlig' },
   { id: 'polygonia-c-album', name_no: 'Hvit c', name_sci: 'Polygonia c-album', family: 'Nymfevinger', inatTaxonId: 56577, adbTaxonId: 29856, redlistCategory: 'LC', rarity: 'Vanlig' },
   { id: 'nymphalis-antiopa', name_no: 'Sørgekåpe', name_sci: 'Nymphalis antiopa', family: 'Nymfevinger', inatTaxonId: 55643, adbTaxonId: 29852, redlistCategory: 'LC', rarity: 'Vanlig' },
+  { id: 'nymphalis-polychloros', name_no: 'Kirsebærsommerfugl', name_sci: 'Nymphalis polychloros', family: 'Nymfevinger', inatTaxonId: 55646, adbTaxonId: 29855, redlistCategory: 'LC', rarity: 'Vanlig' },
+  { id: 'nymphalis-c-album', name_no: 'Hvit c', name_sci: 'Nymphalis c-album', family: 'Nymfevinger', inatTaxonId: 56577, adbTaxonId: 29856, redlistCategory: 'LC', rarity: 'Vanlig' },
   { id: 'araschnia-levana', name_no: 'Kartasommerfugl', name_sci: 'Araschnia levana', family: 'Nymfevinger', inatTaxonId: 62928, adbTaxonId: 29859, redlistCategory: 'NA', rarity: 'Uvanlig' },
   { id: 'argynnis-paphia', name_no: 'Keiserkåpe', name_sci: 'Argynnis paphia', family: 'Nymfevinger', inatTaxonId: 60759, adbTaxonId: 29871, redlistCategory: 'LC', rarity: 'Vanlig' },
   { id: 'argynnis-aglaja', name_no: 'Grønnflekket perlemorssommerfugl', name_sci: 'Argynnis aglaja', family: 'Nymfevinger', inatTaxonId: 60748, adbTaxonId: 29868, redlistCategory: 'LC', rarity: 'Vanlig' },
