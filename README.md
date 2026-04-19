@@ -73,13 +73,29 @@ These rules are game-critical. Change with care and document any changes.
 
 ## Environment Variables
 
-Current implementation does not require mandatory `.env` variables.
+The frontend uses Vite environment variables:
 
-Use `.env.example` as a template for future config. If env vars are introduced, document:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 
-- variable name
-- where it is read in code
-- default/fallback behavior
+Local development (`.env.local`):
+
+```dotenv
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+GitHub Pages (GitHub Actions):
+
+1. Add repository variables in GitHub Settings -> Secrets and variables -> Actions -> Variables.
+2. Create `VITE_SUPABASE_URL`.
+3. Create `VITE_SUPABASE_ANON_KEY`.
+
+Notes:
+
+- Values prefixed with `VITE_` are embedded in the client bundle at build time.
+- `VITE_SUPABASE_ANON_KEY` is expected to be public and must be protected by proper Supabase RLS/policies.
+- Keep server-side secrets (for example `INAT_API_TOKEN`) out of the frontend and store them in Supabase Function Secrets.
 
 ## AI Handoff Notes
 

@@ -57,6 +57,12 @@ function AppContent() {
   }
 
   function handleConfirm(species: Species, visionResult?: VisionResult) {
+    if (!species?.id || !species?.rarity) {
+      console.error('Invalid species payload in handleConfirm:', species);
+      setPending(prev => prev ? { ...prev, error: 'Ugyldig artsdata mottatt. Prøv igjen.' } : null);
+      return;
+    }
+
     const previewUrl = pending?.previewUrl ?? "";
 
     const doRegister = (location?: { lat: number; lng: number }) => {

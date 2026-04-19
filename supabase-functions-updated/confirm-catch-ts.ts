@@ -45,28 +45,56 @@ Deno.serve(async (req) => {
   // Parse request
   const body = await req.json() as {
     species_id: string;
+    speciesId?: string;
     rarity: string;
-    vision_score: number;
+    vision_score: number | string;
+    visionScore?: number | string;
     lat?: number;
     lng?: number;
     has_exif?: boolean;
+    hasExif?: boolean;
     device_make?: string;
+    deviceMake?: string;
     device_model?: string;
+    deviceModel?: string;
   };
 
-  if (!body.species_id || !body.rarity) {
-    return new Response(JSON.stringify({ error: "Mangler species_id eller rarity" }), {
+  console.log('confirm-catch-ts received body:', JSON.stringify(body, null, 2));
+
+  const speciesId = (body.species_id ?? body.speciesId ?? "").trim();
+  const rarity = (body.rarity ?? "").trim();
+
+  console.log('Parsed speciesId:', speciesId, 'rarity:', rarity);
+
+  if (!speciesId) {
+    console.error('Missing speciesId - body.species_id:', body.species_id, 'body.speciesId:', body.speciesId);
+    return new Response(JSON.stringify({ error: "Mangler species_id" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const visionScore = body.vision_score ?? 0;
-  const points = Math.round(10 * (RARITY_MULTIPLIER[body.rarity] ?? 1));
+  if (!rarity) {
+    console.error('Missing rarity - body.rarity:', body.rarity);
+    return new Response(JSON.stringify({ error: "Mangler rarity" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const rawVisionScore = body.vision_score ?? body.visionScore ?? 0;
+  const parsedVisionScore = Number(rawVisionScore);
+  const normalizedVisionScore = Number.isFinite(parsedVisionScore) ? parsedVisionScore : 0;
+  const visionScorePercent = normalizedVisionScore >= 0 && normalizedVisionScore <= 1
+    ? normalizedVisionScore * 100
+    : normalizedVisionScore;
+  const visionScore = Math.round(visionScorePercent);
+  const points = Math.round(10 * (RARITY_MULTIPLIER[rarity] ?? 1));
   const suspicionFlags: string[] = [];
 
   // Anti-cheat: check same location catches
-  if (!body.has_exif) {
+  const hasExif = body.has_exif ?? body.hasExif ?? false;
+  if (!hasExif) {
     suspicionFlags.push("missing_exif");
   }
 
@@ -97,15 +125,15 @@ Deno.serve(async (req) => {
   // Save catch
   const { error: insertErr } = await supabase.from("catches").insert({
     user_id: session.user_id,
-    species_id: body.species_id,
-    rarity: body.rarity,
+    species_id: speciesId,
+    rarity,
     vision_score: visionScore,
     points_awarded: points,
     lat: body.lat ?? null,
     lng: body.lng ?? null,
-    has_exif: body.has_exif ?? false,
-    device_make: body.device_make ?? null,
-    device_model: body.device_model ?? null,
+    has_exif: hasExif,
+    device_make: body.device_make ?? body.deviceMake ?? null,
+    device_model: body.device_model ?? body.deviceModel ?? null,
     counted_in_leaderboard: countedInLeaderboard,
     suspicion_flags: suspicionFlags,
   });

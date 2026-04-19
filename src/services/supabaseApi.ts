@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL as string,
-  import.meta.env.VITE_SUPABASE_ANON_KEY as string
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
 );
 
 // ── Login ────────────────────────────────────────────────────────────────────
@@ -39,12 +42,22 @@ export async function scoreImageViaBackend(
   const form = new FormData();
   form.append('photo', photo);
 
-  const { data, error } = await supabase.functions.invoke('identify', {
+  // Use fetch for multipart uploads so browser controls boundary/content-type.
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/identify`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${sessionToken}`,
+    },
     body: form,
-    headers: { Authorization: `Bearer ${sessionToken}` },
   });
-  if (error) throw new Error(error.message ?? 'Identifisering feilet');
-  return data as ScoreImageResponse;
+
+  const data = (await response.json()) as ScoreImageResponse & { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error ?? 'Identifisering feilet');
+  }
+
+  return data;
 }
 
 // ── Confirm Catch (save to database) ─────────────────────────────────────────
@@ -69,16 +82,25 @@ export async function confirmCatch(
     deviceModel?: string;
   } = {}
 ): Promise<ConfirmCatchResponse> {
-  const { data, error } = await supabase.functions.invoke('confirm-catch', {
+  if (!speciesId || !rarity) {
+    throw new Error('Mangler species_id eller rarity i klientdata');
+  }
+
+  const { data, error } = await supabase.functions.invoke('confirm-catch-ts', {
     body: {
       species_id: speciesId,
+      speciesId,
       rarity,
       vision_score: visionScore,
+      visionScore,
       lat: options.lat,
       lng: options.lng,
       has_exif: options.hasExif,
+      hasExif: options.hasExif,
       device_make: options.deviceMake,
+      deviceMake: options.deviceMake,
       device_model: options.deviceModel,
+      deviceModel: options.deviceModel,
     },
     headers: { Authorization: `Bearer ${sessionToken}` },
   });
