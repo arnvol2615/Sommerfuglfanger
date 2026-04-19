@@ -1,31 +1,51 @@
 import { useState } from 'react';
 import { useAuth } from '../context/useAuth';
-import { login } from '../services/supabaseApi';
+import { login, register } from '../services/supabaseApi';
 
-/**
- * LoginScreen lets the user paste their iNaturalist API token (JWT).
- * Instructions guide them to https://www.inaturalist.org/users/api_token
- */
+type AuthMode = 'login' | 'register';
+
 export function LoginScreen() {
   const { setAuth } = useAuth();
+  const [mode, setMode] = useState<AuthMode>('login');
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
-    const trimmed = username.trim();
-    if (!trimmed) {
+  async function handleAuth() {
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
       setError('Skriv inn brukernavn.');
       return;
     }
+    if (!password) {
+      setError('Skriv inn passord.');
+      return;
+    }
+
+    if (mode === 'register') {
+      if (password.length < 10) {
+        setError('Passord ma vaere minst 10 tegn.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passordene matcher ikke.');
+        return;
+      }
+    }
+
     setLoading(true);
     setError('');
+
     try {
-      // Call backend login to get session token
-      const response = await login(trimmed);
+      const response = mode === 'login'
+        ? await login(trimmedUsername, password)
+        : await register(trimmedUsername, password);
       setAuth(response.sessionToken, response.username);
-    } catch {
-      setError('Innlogging feilet. Prøv igjen.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Innlogging feilet. Proev igjen.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -40,30 +60,72 @@ export function LoginScreen() {
       </p>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 w-full max-w-sm text-left flex flex-col gap-3">
-        <h2 className="font-semibold text-gray-700">Logg inn</h2>
+        <h2 className="font-semibold text-gray-700">{mode === 'login' ? 'Logg inn' : 'Opprett bruker'}</h2>
         <p className="text-sm text-gray-600">
-          Skriv inn ditt brukernavn for å starte spillet.
+          {mode === 'login'
+            ? 'Logg inn med brukernavn og passord for aa starte spillet.'
+            : 'Opprett en ny bruker med brukernavn og passord.'}
         </p>
-        <textarea
+
+        <input
           value={username}
           onChange={e => setUsername(e.target.value)}
-          placeholder="Skriv inn brukernavn…"
-          rows={3}
-          className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500 resize-none"
-            aria-label="Brukernavn"
+          placeholder="Brukernavn"
+          className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+          aria-label="Brukernavn"
+          autoComplete="username"
         />
+
+        <input
+          type="password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          placeholder="Passord"
+          className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+          aria-label="Passord"
+          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+        />
+
+        {mode === 'register' && (
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            placeholder="Bekreft passord"
+            className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+            aria-label="Bekreft passord"
+            autoComplete="new-password"
+          />
+        )}
+
         {error && <p className="text-red-600 text-sm">{error}</p>}
+
         <button
-          onClick={handleLogin}
+          onClick={handleAuth}
           disabled={loading}
           className="bg-green-600 disabled:bg-gray-300 text-white font-bold rounded-full py-3 transition-colors"
         >
-          {loading ? 'Logger inn…' : 'Start spillet'}
+          {loading
+            ? (mode === 'login' ? 'Logger inn...' : 'Oppretter bruker...')
+            : (mode === 'login' ? 'Logg inn' : 'Opprett bruker')}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMode(prev => prev === 'login' ? 'register' : 'login');
+            setError('');
+          }}
+          className="text-sm text-green-700 hover:text-green-800"
+        >
+          {mode === 'login'
+            ? 'Har du ikke bruker? Opprett konto'
+            : 'Har du allerede bruker? Logg inn'}
         </button>
       </div>
 
       <p className="text-xs text-gray-400 max-w-xs">
-        Tokenet lagres kun på din enhet. Det brukes kun til å sende bilder til iNaturalists gjenkjenningstjeneste.
+        Sesjonen lagres kun paa din enhet.
       </p>
     </div>
   );

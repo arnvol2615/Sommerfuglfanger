@@ -40,7 +40,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
   return (
     <div className="flex flex-col min-h-0 pb-4">
       <div className="px-4 pt-4 pb-3">
-        <h2 className="text-xl font-bold text-gray-800">🏆 Highscore</h2>
+        <h2 className="text-xl font-bold text-gray-800">🏆 Toppliste</h2>
         <p className="text-sm text-gray-500">Topp 50 sommerfuglfangere</p>
       </div>
 
