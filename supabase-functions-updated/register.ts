@@ -70,6 +70,14 @@ Deno.serve(async (req) => {
 
     if (!username || !password || !email) {
       return new Response(JSON.stringify({ error: "Mangler brukernavn, e-post eller passord" }), {
+    const body = await req.json() as { username?: string; password?: string };
+    const username = body.username?.trim() ?? "";
+    const password = body.password ?? "";
+    const normalizedUsername = username.toLowerCase();
+    const clientIp = getClientIp(req);
+
+    if (!username || !password) {
+      return new Response(JSON.stringify({ error: "Mangler brukernavn eller passord" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -43,6 +43,15 @@ Use one of:
 - `DATABASE_SCHEMA.sql`
 - `supabase-functions-updated/tables.sql`
 
+## Required database changes
+
+Before deploying `login` and `register`, apply the latest SQL so the `auth_rate_limits` table exists.
+
+Use one of:
+
+- `DATABASE_SCHEMA.sql`
+- `supabase-functions-updated/tables.sql`
+
 ## Quick smoke tests
 
 1. Call `register` with `{ "username": "testuser", "email": "test@example.com", "password": "testpassord123" }`.

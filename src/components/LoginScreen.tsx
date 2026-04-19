@@ -43,6 +43,8 @@ export function LoginScreen() {
       }
       if (password.length < MIN_PASSWORD_LENGTH) {
         setError(`Passord ma vaere minst ${MIN_PASSWORD_LENGTH} tegn.`);
+      if (password.length < 8) {
+        setError('Passord ma vaere minst 8 tegn.');
         return;
       }
       if (password !== confirmPassword) {
