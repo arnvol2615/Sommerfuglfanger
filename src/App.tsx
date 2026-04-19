@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/useAuth";
-import { useGameState } from "./hooks/useGameState";
+import { useGameState, getDailyButterfly } from "./hooks/useGameState";
 import { ScoreHeader } from "./components/ScoreHeader";
 import { CameraCapture } from "./components/CameraCapture";
 import { IdentificationResult } from "./components/IdentificationResult";
@@ -30,14 +30,29 @@ interface LastCatch {
   previewUrl: string;
   familyFound: number;
   familyTotal: number;
+  isDailyBonus: boolean;
+  bonusPoints: number;
 }
 
 function AppContent() {
   const { isAuthenticated, sessionToken, logout } = useAuth();
   const { state, registerSpecies } = useGameState();
+  const dailyButterfly = getDailyButterfly();
   const [tab, setTab] = useState<Tab>("camera");
   const [pending, setPending] = useState<PendingIdentification | null>(null);
   const [lastCatch, setLastCatch] = useState<LastCatch | null>(null);
+  const [dailyPhotoUrl, setDailyPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sciName = encodeURIComponent(dailyButterfly.name_sci);
+    fetch(`https://api.inaturalist.org/v1/taxa?q=${sciName}&rank=species&per_page=1`)
+      .then(r => r.json())
+      .then(data => {
+        const url = data?.results?.[0]?.default_photo?.square_url;
+        if (url) setDailyPhotoUrl(url);
+      })
+      .catch(() => { /* silently ignore, photo is optional */ });
+  }, [dailyButterfly.name_sci]);
 
   if (!isAuthenticated) {
     return <LoginScreen />;
@@ -66,8 +81,7 @@ function AppContent() {
     const previewUrl = pending?.previewUrl ?? "";
 
     const doRegister = (location?: { lat: number; lng: number }) => {
-      // Register locally
-      const { isNew, points } = registerSpecies(species.id, species.rarity, location);
+      const { isNew, points, isDailyBonus, bonusPoints } = registerSpecies(species.id, species.rarity, location);
       
       // Call backend to save catch with anti-cheat checks
       confirmCatch(sessionToken!, species.id, species.rarity, visionResult?.score ?? 0, {
@@ -84,7 +98,7 @@ function AppContent() {
       const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;
       const familyFound = isNew ? alreadyFoundInFamily + 1 : alreadyFoundInFamily;
       setPending(null);
-      setLastCatch({ species, isNew, points, previewUrl, familyFound, familyTotal });
+      setLastCatch({ species, isNew, points, previewUrl, familyFound, familyTotal, isDailyBonus, bonusPoints });
     };
 
     if ("geolocation" in navigator) {
@@ -121,11 +135,30 @@ function AppContent() {
             error={pending.error}
           />
         ) : tab === "camera" ? (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-4 pb-4">
             <CameraCapture onCapture={handleCapture} />
             <p className="text-sm text-gray-500 text-center max-w-xs px-4">
               Ta bilde av en sommerfugl og vi identifiserer arten for deg!
             </p>
+            <div className="w-full max-w-xs mx-4 rounded-2xl border border-amber-200 bg-amber-50 shadow-sm overflow-hidden">
+              <div className="px-4 pt-3 pb-2">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">🌟 Dagens sommerfugl</p>
+                <p className="font-bold text-gray-900">{dailyButterfly.name_no}</p>
+                <p className="text-xs italic text-gray-500">{dailyButterfly.name_sci}</p>
+                {state.dailyBonusClaimed === new Date().toISOString().slice(0, 10) ? (
+                  <p className="mt-1 text-xs text-green-700 font-semibold">✅ Bonus allerede hentet i dag!</p>
+                ) : (
+                  <p className="mt-1 text-xs text-amber-600">Finn den og få +50 bonusstjerner!</p>
+                )}
+              </div>
+              {dailyPhotoUrl && (
+                <img
+                  src={dailyPhotoUrl}
+                  alt={dailyButterfly.name_no}
+                  className="w-full h-36 object-cover"
+                />
+              )}
+            </div>
           </div>
         ) : (
           <FamilyList gameState={state} />
@@ -165,6 +198,8 @@ function AppContent() {
           previewUrl={lastCatch.previewUrl}
           familyFound={lastCatch.familyFound}
           familyTotal={lastCatch.familyTotal}
+          isDailyBonus={lastCatch.isDailyBonus}
+          bonusPoints={lastCatch.bonusPoints}
           onClose={() => setLastCatch(null)}
         />
       )}

@@ -47,6 +47,10 @@ Open the URL shown by Vite (typically http://localhost:5173).
 - `src/services/inatVision.ts`: iNaturalist API integration and result filtering
 - `src/data/butterflies.ts`: curated species dataset and lookup maps
 
+## Taxonomy Source
+
+- Artsdatabanken, Dagsommerfugler (Papilionoidea): https://artsdatabanken.no/arter/takson/84474
+
 ## Auth and Storage
 
 The app stores state in localStorage:

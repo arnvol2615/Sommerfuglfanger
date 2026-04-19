@@ -7,6 +7,8 @@ interface CatchResultModalProps {
   previewUrl: string;
   familyFound: number;
   familyTotal: number;
+  isDailyBonus?: boolean;
+  bonusPoints?: number;
   onClose: () => void;
 }
 
@@ -69,6 +71,8 @@ export function CatchResultModal({
   previewUrl,
   familyFound,
   familyTotal,
+  isDailyBonus = false,
+  bonusPoints = 0,
   onClose,
 }: CatchResultModalProps) {
   const visual = rarityVisual(species.rarity);
@@ -78,7 +82,7 @@ export function CatchResultModal({
       <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-[fadeIn_.2s_ease-out]">
         <div className="relative p-5 bg-gradient-to-b from-green-50 to-white">
           <div className="absolute right-4 top-4 text-xs font-semibold text-gray-500">
-            +{points} stjerner
+            +{points + bonusPoints} stjerner
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-green-700">
@@ -87,6 +91,12 @@ export function CatchResultModal({
             <h3 className="mt-1 text-xl font-bold text-gray-900">{species.name_no}</h3>
             <p className="text-sm italic text-gray-500">{species.name_sci}</p>
           </div>
+
+          {isDailyBonus && (
+            <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-center">
+              <p className="text-sm font-bold text-amber-700">🌟 Dagens sommerfugl! +{bonusPoints} bonusstjerner</p>
+            </div>
+          )}
 
           <div className="mt-4 flex justify-center">
             <img
