@@ -115,6 +115,8 @@ export interface LeaderboardRow {
   username: string;
   score: number;
   valid_catch_count: number;
+  authenticity_score: number;
+  has_suspicious_activity: boolean;
 }
 
 export async function getLeaderboard(limit = 50): Promise<LeaderboardRow[]> {

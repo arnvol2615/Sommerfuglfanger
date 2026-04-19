@@ -31,11 +31,17 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
     return null;
   };
 
+  const authenticityIcon = (score: number, hasSuspicious: boolean) => {
+    if (hasSuspicious || score < 0.25) return { icon: '❌', label: 'Mistenkelig', color: 'text-red-500' };
+    if (score < 0.5) return { icon: '⚠️', label: 'Usikker', color: 'text-yellow-500' };
+    return { icon: '✅', label: 'Autentisk', color: 'text-green-500' };
+  };
+
   return (
     <div className="flex flex-col min-h-0 pb-4">
       <div className="px-4 pt-4 pb-3">
         <h2 className="text-xl font-bold text-gray-800">🏆 Highscore</h2>
-        <p className="text-sm text-gray-500">Topp 50 sommerfuglere</p>
+        <p className="text-sm text-gray-500">Topp 50 sommerfuglfangere</p>
       </div>
 
       {loading && (
@@ -55,6 +61,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
           {top50.map((row) => {
             const isMe = row.username === currentUsername;
             const medal = medalEmoji(row.rank);
+            const auth = authenticityIcon(row.authenticity_score, row.has_suspicious_activity);
             return (
               <div
                 key={row.username}
@@ -62,6 +69,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
                   'flex items-center px-4 py-3 gap-3 border-b border-gray-50 last:border-b-0 ' +
                   (isMe ? 'bg-green-50' : '')
                 }
+                title={auth.label}
               >
                 <span className="w-8 text-center font-bold text-gray-500 text-sm shrink-0">
                   {medal ?? `#${row.rank}`}
@@ -72,6 +80,9 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
                 </span>
                 <span className="text-yellow-500 font-bold text-sm shrink-0">
                   {row.score} ⭐
+                </span>
+                <span className={`text-sm shrink-0 ${auth.color}`} title={auth.label}>
+                  {auth.icon}
                 </span>
                 <span className="text-gray-400 text-xs shrink-0 hidden sm:block">
                   {row.valid_catch_count} funn

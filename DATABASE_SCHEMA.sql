@@ -68,6 +68,50 @@ ORDER BY total_score DESC;
 --   ON catches FOR SELECT
 --   USING (auth.uid() = user_id);
 
+-- 7. Create function to compute user authenticity score
+CREATE OR REPLACE FUNCTION compute_user_authenticity(user_id_param uuid)
+RETURNS TABLE(authenticity_score numeric, has_suspicious_activity boolean) AS $$
+DECLARE
+  total_catches INT;
+  catches_with_exif INT;
+  unique_locations INT;
+  exif_percentage numeric;
+  device_variety INT;
+BEGIN
+  -- Count total valid catches, EXIF-tagged, and unique GPS locations
+  SELECT COUNT(*),
+         SUM(CASE WHEN has_exif THEN 1 ELSE 0 END),
+         COUNT(DISTINCT (ROUND(lat::numeric, 4), ROUND(lng::numeric, 4)))
+  INTO total_catches, catches_with_exif, unique_locations
+  FROM catches
+  WHERE user_id = user_id_param AND counted_in_leaderboard = true;
+
+  -- Handle no catches case
+  IF total_catches = 0 THEN
+    RETURN QUERY SELECT 0.5::numeric, false;
+    RETURN;
+  END IF;
+
+  -- Calculate EXIF percentage
+  exif_percentage := COALESCE(catches_with_exif::numeric / total_catches, 0);
+
+  -- Count unique device makes
+  SELECT COUNT(DISTINCT device_make)
+  INTO device_variety
+  FROM catches
+  WHERE user_id = user_id_param AND counted_in_leaderboard = true AND device_make IS NOT NULL;
+
+  -- Compute authenticity score (0-1 scale)
+  -- 40% = EXIF presence, 35% = location diversity, 25% = device consistency
+  RETURN QUERY SELECT
+    (exif_percentage * 0.4 +
+     LEAST(unique_locations::numeric / NULLIF(total_catches::numeric, 0), 1.0) * 0.35 +
+     (1.0 - LEAST(device_variety::numeric / NULLIF(total_catches::numeric, 0), 1.0)) * 0.25)::numeric,
+    -- Suspicious if: <20% EXIF, only 1 location (within 10m), or unusual device patterns
+    (exif_percentage < 0.2 OR unique_locations <= 1)::boolean;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Set up Supabase environment variables needed:
 -- SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 -- SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...  (from Settings → API)
