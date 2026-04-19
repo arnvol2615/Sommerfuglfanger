@@ -25,8 +25,8 @@ export function LoginScreen() {
     }
 
     if (mode === 'register') {
-      if (password.length < 10) {
-        setError('Passord ma vaere minst 10 tegn.');
+      if (password.length < 8) {
+        setError('Passord ma vaere minst 8 tegn.');
         return;
       }
       if (password !== confirmPassword) {

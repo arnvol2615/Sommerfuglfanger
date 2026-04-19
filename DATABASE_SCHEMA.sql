@@ -31,6 +31,17 @@ CREATE TABLE sessions (
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
 
+-- 2b. Create auth rate limit table
+CREATE TABLE auth_rate_limits (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  action text NOT NULL,
+  bucket_key text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_auth_rate_limits_lookup
+  ON auth_rate_limits(action, bucket_key, created_at DESC);
+
 -- 3. Create catches table
 CREATE TABLE catches (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,6 +99,14 @@ ORDER BY total_score DESC;
 -- ALTER TABLE users ALTER COLUMN username TYPE citext;
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash text;
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS password_updated_at timestamptz NOT NULL DEFAULT now();
+-- CREATE TABLE IF NOT EXISTS auth_rate_limits (
+--   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--   action text NOT NULL,
+--   bucket_key text NOT NULL,
+--   created_at timestamptz NOT NULL DEFAULT now()
+-- );
+-- CREATE INDEX IF NOT EXISTS idx_auth_rate_limits_lookup
+--   ON auth_rate_limits(action, bucket_key, created_at DESC);
 -- UPDATE users
 -- SET password_hash = crypt(encode(gen_random_bytes(24), 'hex'), gen_salt('bf'))
 -- WHERE password_hash IS NULL;
