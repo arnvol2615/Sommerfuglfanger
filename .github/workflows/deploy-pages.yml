@@ -38,23 +38,23 @@ jobs:
       - name: Validate Frontend Env (push only)
         if: github.event_name == 'push'
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           if [ -z "$VITE_SUPABASE_URL" ]; then
-            echo "Missing GitHub variable: VITE_SUPABASE_URL" >&2
+            echo "Missing GitHub Actions value: set VITE_SUPABASE_URL in Variables or Secrets" >&2
             exit 1
           fi
 
           if [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
-            echo "Missing GitHub variable: VITE_SUPABASE_ANON_KEY" >&2
+            echo "Missing GitHub Actions value: set VITE_SUPABASE_ANON_KEY in Variables or Secrets" >&2
             exit 1
           fi
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Setup Pages
