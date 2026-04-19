@@ -18,7 +18,7 @@ export interface LoginResponse {
 
 async function callPublicAuthFunction(
   functionName: 'login' | 'register',
-  payload: { username: string; password: string }
+  payload: { username: string; password: string; email?: string }
 ): Promise<LoginResponse> {
   const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
     method: 'POST',
@@ -41,8 +41,40 @@ export async function login(username: string, password: string): Promise<LoginRe
   return callPublicAuthFunction('login', { username, password });
 }
 
-export async function register(username: string, password: string): Promise<LoginResponse> {
-  return callPublicAuthFunction('register', { username, password });
+export async function register(username: string, email: string, password: string): Promise<LoginResponse> {
+  return callPublicAuthFunction('register', { username, email, password });
+}
+
+export async function requestPasswordReset(payload: { email?: string; username?: string }): Promise<void> {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/reset-password`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = (await response.json()) as { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error ?? 'reset-password request feilet');
+  }
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/reset-password`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ token, newPassword }),
+  });
+
+  const data = (await response.json()) as { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error ?? 'reset-password feilet');
+  }
 }
 
 // ── Identify (get vision results) ────────────────────────────────────────────

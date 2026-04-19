@@ -9,10 +9,15 @@ CREATE EXTENSION IF NOT EXISTS citext;
 CREATE TABLE users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   username citext UNIQUE NOT NULL,
+  email text UNIQUE,
   password_hash text NOT NULL,
   password_updated_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX idx_users_email_lower_unique
+  ON users (LOWER(email))
+  WHERE email IS NOT NULL;
 
 -- Optional hardening: keep usernames simple and consistent
 ALTER TABLE users
@@ -30,6 +35,31 @@ CREATE TABLE sessions (
 -- Create index for session lookups
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+
+-- 2b. Create auth rate limit table
+CREATE TABLE auth_rate_limits (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  action text NOT NULL,
+  bucket_key text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_auth_rate_limits_lookup
+  ON auth_rate_limits(action, bucket_key, created_at DESC);
+
+-- 2c. Create password reset token table
+CREATE TABLE password_reset_tokens (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  requested_ip text,
+  expires_at timestamptz NOT NULL,
+  used_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+CREATE INDEX idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 
 -- 3. Create catches table
 CREATE TABLE catches (
@@ -86,8 +116,31 @@ ORDER BY total_score DESC;
 -- BEGIN;
 -- CREATE EXTENSION IF NOT EXISTS citext;
 -- ALTER TABLE users ALTER COLUMN username TYPE citext;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS email text;
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash text;
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS password_updated_at timestamptz NOT NULL DEFAULT now();
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower_unique
+--   ON users (LOWER(email))
+--   WHERE email IS NOT NULL;
+-- CREATE TABLE IF NOT EXISTS auth_rate_limits (
+--   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--   action text NOT NULL,
+--   bucket_key text NOT NULL,
+--   created_at timestamptz NOT NULL DEFAULT now()
+-- );
+-- CREATE INDEX IF NOT EXISTS idx_auth_rate_limits_lookup
+--   ON auth_rate_limits(action, bucket_key, created_at DESC);
+-- CREATE TABLE IF NOT EXISTS password_reset_tokens (
+--   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--   token_hash text NOT NULL UNIQUE,
+--   requested_ip text,
+--   expires_at timestamptz NOT NULL,
+--   used_at timestamptz,
+--   created_at timestamptz NOT NULL DEFAULT now()
+-- );
+-- CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+-- CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 -- UPDATE users
 -- SET password_hash = crypt(encode(gen_random_bytes(24), 'hex'), gen_salt('bf'))
 -- WHERE password_hash IS NULL;
