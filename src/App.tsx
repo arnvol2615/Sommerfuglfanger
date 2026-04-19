@@ -120,6 +120,7 @@ function AppContent() {
   return (
     <div className="flex flex-col min-h-svh">
       <ScoreHeader
+        username={username}
         totalPoints={state.totalPoints}
         foundCount={Object.keys(state.foundSpecies).length}
         totalCount={SPECIES.length}

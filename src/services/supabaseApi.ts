@@ -16,13 +16,33 @@ export interface LoginResponse {
   sessionToken: string;
 }
 
-export async function login(username: string): Promise<LoginResponse> {
-  const { data, error } = await supabase.functions.invoke('login', {
-    body: { username },
-    headers: {}, // Fjern Authorization for public endpoint
+async function callPublicAuthFunction(
+  functionName: 'login' | 'register',
+  payload: { username: string; password: string }
+): Promise<LoginResponse> {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
   });
-  if (error) throw new Error(error.message ?? 'Innlogging feilet');
-  return data as LoginResponse;
+
+  const data = (await response.json()) as LoginResponse & { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error ?? `${functionName} feilet`);
+  }
+
+  return data;
+}
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  return callPublicAuthFunction('login', { username, password });
+}
+
+export async function register(username: string, password: string): Promise<LoginResponse> {
+  return callPublicAuthFunction('register', { username, password });
 }
 
 // ── Identify (get vision results) ────────────────────────────────────────────

@@ -1,12 +1,23 @@
 -- Sommerfuglfanger Database Schema
 -- Run these SQL queries in Supabase to set up the database
 
+-- Extensions used for auth/security
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS citext;
+
 -- 1. Create users table
 CREATE TABLE users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  username text UNIQUE NOT NULL,
+  username citext UNIQUE NOT NULL,
+  password_hash text NOT NULL,
+  password_updated_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Optional hardening: keep usernames simple and consistent
+ALTER TABLE users
+  ADD CONSTRAINT users_username_format_check
+  CHECK (username ~ '^[a-zA-Z0-9_.-]{3,32}$');
 
 -- 2. Create sessions table
 CREATE TABLE sessions (
@@ -67,6 +78,24 @@ ORDER BY total_score DESC;
 -- CREATE POLICY "Users can view their own catches"
 --   ON catches FOR SELECT
 --   USING (auth.uid() = user_id);
+
+-- 6b. Migration for existing databases that already have users
+-- Run this block once in environments created with the old schema.
+-- It keeps existing usernames but adds secure password support.
+--
+-- BEGIN;
+-- CREATE EXTENSION IF NOT EXISTS citext;
+-- ALTER TABLE users ALTER COLUMN username TYPE citext;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash text;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS password_updated_at timestamptz NOT NULL DEFAULT now();
+-- UPDATE users
+-- SET password_hash = crypt(encode(gen_random_bytes(24), 'hex'), gen_salt('bf'))
+-- WHERE password_hash IS NULL;
+-- ALTER TABLE users ALTER COLUMN password_hash SET NOT NULL;
+-- ALTER TABLE users
+--   ADD CONSTRAINT users_username_format_check
+--   CHECK (username ~ '^[a-zA-Z0-9_.-]{3,32}$');
+-- COMMIT;
 
 -- 7. Create function to compute user authenticity score
 CREATE OR REPLACE FUNCTION compute_user_authenticity(user_id_param uuid)
