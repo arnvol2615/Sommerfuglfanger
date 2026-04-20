@@ -1,21 +1,18 @@
 import { useState } from 'react';
 import { useAuth } from '../context/useAuth';
-import { login, register, requestPasswordReset, resetPassword } from '../services/supabaseApi';
+import { login, register } from '../services/supabaseApi';
 
-type AuthMode = 'login' | 'register' | 'forgot' | 'reset';
+type AuthMode = 'login' | 'register';
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export function LoginScreen() {
   const { setAuth } = useAuth();
-  const resetTokenFromUrl = new URLSearchParams(window.location.search).get('token') ?? '';
-  const [mode, setMode] = useState<AuthMode>(resetTokenFromUrl ? 'reset' : 'login');
+  const [mode, setMode] = useState<AuthMode>('login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [resetPasswordValue, setResetPasswordValue] = useState('');
-  const [resetConfirmPasswordValue, setResetConfirmPasswordValue] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,82 +65,7 @@ export function LoginScreen() {
     }
   }
 
-  async function handleRequestPasswordReset() {
-    const trimmedEmail = email.trim();
-    const trimmedUsername = username.trim();
-
-    if (!trimmedEmail && !trimmedUsername) {
-      setError('Skriv inn e-post eller brukernavn.');
-      return;
-    }
-
-    if (trimmedEmail && !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
-      setError('Skriv inn en gyldig e-postadresse.');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    try {
-      await requestPasswordReset({
-        email: trimmedEmail || undefined,
-        username: trimmedUsername || undefined,
-      });
-      setMessage('Hvis kontoen finnes, har vi sendt deg en e-post med reset-lenke.');
-    } catch (err) {
-      const text = err instanceof Error ? err.message : 'Kunne ikke sende reset-foresporsel.';
-      setError(text);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleResetPassword() {
-    if (!resetTokenFromUrl) {
-      setError('Mangler reset-token i lenken.');
-      return;
-    }
-
-    if (!resetPasswordValue) {
-      setError('Skriv inn nytt passord.');
-      return;
-    }
-
-    if (resetPasswordValue.length < MIN_PASSWORD_LENGTH) {
-      setError(`Passord ma vaere minst ${MIN_PASSWORD_LENGTH} tegn.`);
-      return;
-    }
-
-    if (resetPasswordValue !== resetConfirmPasswordValue) {
-      setError('Passordene matcher ikke.');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    try {
-      await resetPassword(resetTokenFromUrl, resetPasswordValue);
-      const cleaned = `${window.location.origin}${window.location.pathname}`;
-      window.history.replaceState({}, '', cleaned);
-      setMode('login');
-      setResetPasswordValue('');
-      setResetConfirmPasswordValue('');
-      setMessage('Passordet er oppdatert. Logg inn med nytt passord.');
-    } catch (err) {
-      const text = err instanceof Error ? err.message : 'Passordreset feilet.';
-      setError(text);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const isAuthMode = mode === 'login' || mode === 'register';
-  const isForgotMode = mode === 'forgot';
-  const isResetMode = mode === 'reset';
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 p-6 gap-6 text-center">
@@ -157,33 +79,29 @@ export function LoginScreen() {
         <h2 className="font-semibold text-gray-700">
           {mode === 'login' && 'Logg inn'}
           {mode === 'register' && 'Opprett bruker'}
-          {mode === 'forgot' && 'Glemt passord'}
-          {mode === 'reset' && 'Sett nytt passord'}
         </h2>
         <p className="text-sm text-gray-600">
           {mode === 'login' && 'Logg inn med brukernavn og passord for aa starte spillet.'}
           {mode === 'register' && 'Opprett en ny bruker med brukernavn, e-post og passord.'}
-          {mode === 'forgot' && 'Oppgi e-post eller brukernavn for aa motta reset-lenke.'}
-          {mode === 'reset' && 'Skriv inn nytt passord for kontoen din.'}
         </p>
 
-        {!isResetMode && (
+        {(
           <input
             value={username}
             onChange={e => setUsername(e.target.value)}
-            placeholder={isForgotMode ? 'Brukernavn (valgfritt)' : 'Brukernavn'}
+            placeholder="Brukernavn"
             className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
             aria-label="Brukernavn"
             autoComplete="username"
           />
         )}
 
-        {(mode === 'register' || mode === 'forgot') && (
+        {(mode === 'register') && (
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder={isForgotMode ? 'E-post (valgfritt)' : 'E-post'}
+            placeholder="E-post"
             className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
             aria-label="E-post"
             autoComplete="email"
@@ -214,30 +132,6 @@ export function LoginScreen() {
           />
         )}
 
-        {isResetMode && (
-          <input
-            type="password"
-            value={resetPasswordValue}
-            onChange={e => setResetPasswordValue(e.target.value)}
-            placeholder="Nytt passord"
-            className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-            aria-label="Nytt passord"
-            autoComplete="new-password"
-          />
-        )}
-
-        {isResetMode && (
-          <input
-            type="password"
-            value={resetConfirmPasswordValue}
-            onChange={e => setResetConfirmPasswordValue(e.target.value)}
-            placeholder="Bekreft nytt passord"
-            className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-            aria-label="Bekreft nytt passord"
-            autoComplete="new-password"
-          />
-        )}
-
         {error && <p className="text-red-600 text-sm">{error}</p>}
         {message && <p className="text-green-700 text-sm">{message}</p>}
 
@@ -250,26 +144,6 @@ export function LoginScreen() {
             {loading
               ? (mode === 'login' ? 'Logger inn...' : 'Oppretter bruker...')
               : (mode === 'login' ? 'Logg inn' : 'Opprett bruker')}
-          </button>
-        )}
-
-        {isForgotMode && (
-          <button
-            onClick={handleRequestPasswordReset}
-            disabled={loading}
-            className="bg-green-600 disabled:bg-gray-300 text-white font-bold rounded-full py-3 transition-colors"
-          >
-            {loading ? 'Sender...' : 'Send reset-lenke'}
-          </button>
-        )}
-
-        {isResetMode && (
-          <button
-            onClick={handleResetPassword}
-            disabled={loading}
-            className="bg-green-600 disabled:bg-gray-300 text-white font-bold rounded-full py-3 transition-colors"
-          >
-            {loading ? 'Oppdaterer...' : 'Sett nytt passord'}
           </button>
         )}
 
@@ -301,33 +175,6 @@ export function LoginScreen() {
           </button>
         )}
 
-        {(mode === 'login' || mode === 'register') && (
-          <button
-            type="button"
-            onClick={() => {
-              setMode('forgot');
-              setError('');
-              setMessage('');
-            }}
-            className="text-sm text-green-700 hover:text-green-800"
-          >
-            Glemt passord?
-          </button>
-        )}
-
-        {(mode === 'forgot' || mode === 'reset') && (
-          <button
-            type="button"
-            onClick={() => {
-              setMode('login');
-              setError('');
-              setMessage('');
-            }}
-            className="text-sm text-green-700 hover:text-green-800"
-          >
-            Tilbake til innlogging
-          </button>
-        )}
       </div>
 
       <p className="text-xs text-gray-400 max-w-xs">

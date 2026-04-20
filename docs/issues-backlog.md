@@ -4,6 +4,10 @@ Denne fila inneholder forslag til framtidige issues for Sommerfuglfanger.
 
 Brukes som kilde for manuell eller automatisk opprettelse i GitHub.
 
+## Huskelapp
+
+- iNaturalist API token URL: https://www.inaturalist.org/users/api_token
+
 ## Prioritet High
 
 ### 1) Legg til automatiske tester for hovedflyt
@@ -38,6 +42,22 @@ Faa lint pipeline tilbake til green.
 Acceptance criteria:
 - Ingen ESLint errors ved npm run lint.
 - Ingen funksjonelle regresjoner i login og identifisering.
+
+### 13) Haandter utlopende iNaturalist-token automatisk
+Labels: auth, vision, high
+
+Maal:
+Unngaa nedetid i identify-flyten hvis INAT_API_TOKEN utloeper eller blir ugyldig.
+
+Bakgrunn:
+- Dagens identify-flyt er avhengig av en gyldig `INAT_API_TOKEN` i Supabase secrets.
+- Hvis token har kort levetid eller roteres, kan brukere faa 401 fra iNaturalist.
+
+Acceptance criteria:
+- Feil fra iNaturalist 401 oversettes til tydelig driftsfeil i logg og klientmelding.
+- Det finnes dokumentert rutine for token-rotasjon (minimum) eller automatisk refresh (maalbildet).
+- Token lagres kun som secret (ikke i frontend, ikke i repo).
+- Deploy-checklist inneholder verifisering av gyldig token etter deploy.
 
 ## Prioritet Medium
 

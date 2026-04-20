@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getLeaderboard, type LeaderboardRow } from '../services/supabaseApi';
+import {
+  getLeaderboard,
+  getLeaderboardUserCollection,
+  type LeaderboardRow,
+  type LeaderboardUserCollection,
+} from '../services/supabaseApi';
+import { SPECIES_BY_ID } from '../data/butterflies';
 
 interface LeaderboardProps {
   currentUsername: string | null;
@@ -9,6 +15,10 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<LeaderboardUserCollection | null>(null);
+  const [collectionLoading, setCollectionLoading] = useState(false);
+  const [collectionError, setCollectionError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +47,28 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
     return { icon: '✅', label: 'Autentisk', color: 'text-green-500' };
   };
 
+  const openCollection = async (username: string) => {
+    setSelectedUsername(username);
+    setSelectedCollection(null);
+    setCollectionError(null);
+    setCollectionLoading(true);
+    try {
+      const data = await getLeaderboardUserCollection(username);
+      setSelectedCollection(data);
+    } catch (err) {
+      setCollectionError(err instanceof Error ? err.message : 'Kunne ikke hente brukerens funn');
+    } finally {
+      setCollectionLoading(false);
+    }
+  };
+
+  const closeCollection = () => {
+    setSelectedUsername(null);
+    setSelectedCollection(null);
+    setCollectionError(null);
+    setCollectionLoading(false);
+  };
+
   return (
     <div className="flex flex-col min-h-0 pb-4">
       <div className="px-4 pt-4 pb-3">
@@ -63,10 +95,12 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
             const medal = medalEmoji(row.rank);
             const auth = authenticityIcon(row.authenticity_score, row.has_suspicious_activity);
             return (
-              <div
+              <button
                 key={row.username}
+                type="button"
+                onClick={() => openCollection(row.username)}
                 className={
-                  'flex items-center px-4 py-3 gap-3 border-b border-gray-50 last:border-b-0 ' +
+                  'w-full text-left flex items-center px-4 py-3 gap-3 border-b border-gray-50 last:border-b-0 transition-colors hover:bg-gray-50 ' +
                   (isMe ? 'bg-green-50' : '')
                 }
                 title={auth.label}
@@ -87,7 +121,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
                 <span className="text-gray-400 text-xs shrink-0 hidden sm:block">
                   {row.valid_catch_count} funn
                 </span>
-              </div>
+              </button>
             );
           })}
 
@@ -113,6 +147,78 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
               <span className="ml-2 text-xs text-green-600 font-normal">(deg)</span>
             </span>
             <span className="text-xs text-gray-400">Ikke i topp 50 ennå</span>
+          </div>
+        </div>
+      )}
+
+      {selectedUsername && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={closeCollection}
+        >
+          <div
+            className="w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-gray-800">{selectedUsername}</h3>
+                <p className="text-xs text-gray-500">Funnede sommerfugler</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeCollection}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Lukk
+              </button>
+            </div>
+
+            <div className="p-4">
+              {collectionLoading && (
+                <p className="text-sm text-gray-500">Laster funn…</p>
+              )}
+
+              {collectionError && (
+                <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {collectionError}
+                </div>
+              )}
+
+              {!collectionLoading && !collectionError && selectedCollection && (
+                <>
+                  <p className="text-xs text-gray-500 mb-3">
+                    {selectedCollection.unique_species_count} unike arter · {selectedCollection.total_valid_catches} tellende funn
+                  </p>
+
+                  {selectedCollection.species.length === 0 ? (
+                    <p className="text-sm text-gray-500">Ingen funn registrert ennå.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedCollection.species.map((entry) => {
+                        const species = SPECIES_BY_ID[entry.species_id];
+                        return (
+                          <div
+                            key={entry.species_id}
+                            className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-gray-800 truncate">
+                                {species?.name_no ?? entry.species_id}
+                              </p>
+                              {species?.name_sci && (
+                                <p className="text-xs text-gray-500 italic truncate">{species.name_sci}</p>
+                              )}
+                            </div>
+                            <span className="text-xs font-semibold text-gray-600 ml-3">x{entry.count}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
