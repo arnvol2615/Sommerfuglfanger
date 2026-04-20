@@ -35,6 +35,58 @@ interface LastCatch {
   bonusPoints: number;
 }
 
+async function hasExifMetadata(file: File): Promise<boolean> {
+  // EXIF lives in JPEG APP1 segment with the "Exif\0\0" signature.
+  if (!file.type.includes('jpeg') && !file.type.includes('jpg')) {
+    return false;
+  }
+
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  // JPEG SOI marker
+  if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
+    return false;
+  }
+
+  let offset = 2;
+  while (offset + 4 < bytes.length) {
+    if (bytes[offset] !== 0xff) {
+      break;
+    }
+
+    const marker = bytes[offset + 1];
+    // Start of Scan or End of Image, stop parsing segments.
+    if (marker === 0xda || marker === 0xd9) {
+      break;
+    }
+
+    const segmentLength = (bytes[offset + 2] << 8) | bytes[offset + 3];
+    if (segmentLength < 2 || offset + 2 + segmentLength > bytes.length) {
+      break;
+    }
+
+    // APP1 marker
+    if (marker === 0xe1) {
+      const start = offset + 4;
+      if (
+        bytes[start] === 0x45 && // E
+        bytes[start + 1] === 0x78 && // x
+        bytes[start + 2] === 0x69 && // i
+        bytes[start + 3] === 0x66 && // f
+        bytes[start + 4] === 0x00 &&
+        bytes[start + 5] === 0x00
+      ) {
+        return true;
+      }
+    }
+
+    offset += 2 + segmentLength;
+  }
+
+  return false;
+}
+
 function AppContent() {
   const { isAuthenticated, sessionToken, username, logout } = useAuth();
   const { state, registerSpecies } = useGameState();
@@ -81,14 +133,23 @@ function AppContent() {
 
     const previewUrl = pending?.previewUrl ?? "";
 
-    const doRegister = (location?: { lat: number; lng: number }) => {
+    const doRegister = async (location?: { lat: number; lng: number }) => {
       const { isNew, points, isDailyBonus, bonusPoints } = registerSpecies(species.id, species.rarity, location);
+
+      let hasExif = false;
+      try {
+        if (pending?.file) {
+          hasExif = await hasExifMetadata(pending.file);
+        }
+      } catch {
+        hasExif = false;
+      }
       
       // Call backend to save catch with anti-cheat checks
       confirmCatch(sessionToken!, species.id, species.rarity, visionResult?.score ?? 0, {
         lat: location?.lat,
         lng: location?.lng,
-        hasExif: true, // TODO: check EXIF from image metadata
+        hasExif,
       }).catch(err => {
         console.error('Backend catch save failed:', err);
         // Still show success locally even if backend call fails
@@ -104,12 +165,16 @@ function AppContent() {
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        pos => doRegister({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => doRegister(), // permission denied or error — register without location
+        pos => {
+          void doRegister({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {
+          void doRegister(); // permission denied or error — register without location
+        },
         { timeout: 5000, maximumAge: 60000 }
       );
     } else {
-      doRegister();
+      void doRegister();
     }
   }
 

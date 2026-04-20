@@ -184,3 +184,29 @@ export async function getLeaderboard(limit = 50): Promise<LeaderboardRow[]> {
   if (!response.ok) throw new Error(data.error ?? 'Leaderboard feilet');
   return data.rows.map((r, i) => ({ ...r, rank: i + 1 }));
 }
+
+export interface LeaderboardUserSpeciesRow {
+  species_id: string;
+  count: number;
+}
+
+export interface LeaderboardUserCollection {
+  username: string;
+  total_valid_catches: number;
+  unique_species_count: number;
+  species: LeaderboardUserSpeciesRow[];
+}
+
+export async function getLeaderboardUserCollection(username: string): Promise<LeaderboardUserCollection> {
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/leaderboard?username=${encodeURIComponent(username)}`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+      },
+    }
+  );
+  const data = (await response.json()) as LeaderboardUserCollection & { error?: string };
+  if (!response.ok) throw new Error(data.error ?? 'Kunne ikke hente brukerens funn');
+  return data;
+}

@@ -158,6 +158,8 @@ Deno.serve(async (req) => {
         throw new Error(`Databasefeil: ${userErr.message}`);
       }
 
+      console.log("[reset-password] Bruker søk:", { email, username, foundUser: !!user?.email });
+
       if (user?.email) {
         const tokenValue = `${crypto.randomUUID()}${crypto.randomUUID().replace(/-/g, "")}`;
         const tokenHash = await hashToken(tokenValue);
@@ -178,17 +180,25 @@ Deno.serve(async (req) => {
         const resendApiKey = Deno.env.get("RESEND_API_KEY");
         const emailFrom = Deno.env.get("EMAIL_FROM");
 
+        console.log("[reset-password] Environment-variabler:", {
+          hasAppBaseUrl: !!appBaseUrl,
+          hasResendApiKey: !!resendApiKey,
+          hasEmailFrom: !!emailFrom,
+        });
+
         if (!appBaseUrl || !resendApiKey || !emailFrom) {
           throw new Error("Mangler APP_BASE_URL, RESEND_API_KEY eller EMAIL_FROM");
         }
 
         const resetLink = `${appBaseUrl.replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(tokenValue)}`;
+        console.log("[reset-password] Sender epost til:", user.email);
         await sendResetEmail({
           resendApiKey,
           from: emailFrom,
           to: user.email,
           resetLink,
         });
+        console.log("[reset-password] Epost sendt OK");
       }
 
       return new Response(

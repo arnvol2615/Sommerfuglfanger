@@ -100,6 +100,25 @@ Deno.serve(async (req) => {
 
   let countedInLeaderboard = true;
 
+  const { count: existingSpeciesCount, error: existingSpeciesErr } = await supabase
+    .from("catches")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", session.user_id)
+    .eq("species_id", speciesId)
+    .eq("counted_in_leaderboard", true);
+
+  if (existingSpeciesErr) {
+    return new Response(JSON.stringify({ error: `Database error: ${existingSpeciesErr.message}` }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  if ((existingSpeciesCount ?? 0) > 0) {
+    countedInLeaderboard = false;
+    suspicionFlags.push("duplicate_species");
+  }
+
   if (body.lat !== undefined && body.lng !== undefined) {
     const lat = body.lat;
     const lng = body.lng;

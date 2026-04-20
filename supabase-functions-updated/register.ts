@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
     const normalizedUsername = username.toLowerCase();
     const clientIp = getClientIp(req);
 
+    console.log("[register] Mottatt data:", { username, email, hasPassword: !!password });
+
     if (!username || !password || !email) {
       return new Response(JSON.stringify({ error: "Mangler brukernavn, e-post eller passord" }), {
         status: 400,
@@ -160,6 +162,8 @@ Deno.serve(async (req) => {
 
     const passwordHash = bcrypt.hashSync(password, 12);
 
+    console.log("[register] Før insert:", { username, email, passwordHashLength: passwordHash.length });
+
     const { data: user, error: insertErr } = await supabase
       .from("users")
       .insert({
@@ -168,8 +172,10 @@ Deno.serve(async (req) => {
         password_hash: passwordHash,
         password_updated_at: new Date().toISOString(),
       })
-      .select("id, username")
+      .select("id, username, email")
       .single();
+
+    console.log("[register] Etter insert:", { insertErr, user });
 
     if (insertErr) {
       return new Response(JSON.stringify({ error: `Opprett bruker feilet: ${insertErr.message}` }), {

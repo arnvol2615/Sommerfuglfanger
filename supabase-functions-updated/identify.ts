@@ -189,17 +189,32 @@ Deno.serve(async (req) => {
   inatForm.append("image", new Blob([photoBuffer], { type: "image/jpeg" }), "photo.jpg");
 
   // Call iNaturalist with secret token
-  const inatToken = Deno.env.get("INAT_API_TOKEN")!;
+  const rawInatToken = Deno.env.get("INAT_API_TOKEN")?.trim();
+  if (!rawInatToken) {
+    return new Response(JSON.stringify({ error: "iNaturalist-feil: Mangler INAT_API_TOKEN secret" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const inatAuthHeader = rawInatToken.toLowerCase().startsWith("bearer ")
+    ? rawInatToken
+    : `Bearer ${rawInatToken}`;
+
   let inatData;
   try {
     const inatResp = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
       method: "POST",
-      headers: { Authorization: inatToken },
+      headers: {
+        Authorization: inatAuthHeader,
+        Accept: "application/json",
+      },
       body: inatForm,
     });
 
     if (!inatResp.ok) {
-      throw new Error(`iNaturalist error: ${inatResp.status}`);
+      const details = await inatResp.text();
+      throw new Error(`iNaturalist error: ${inatResp.status} ${details.slice(0, 240)}`);
     }
 
     inatData = await inatResp.json() as {

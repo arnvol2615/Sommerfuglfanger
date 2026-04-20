@@ -10,6 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
+    const usernameParam = url.searchParams.get("username")?.trim();
     const limitParam = parseInt(url.searchParams.get("limit") ?? "20");
     const limit = isNaN(limitParam) ? 20 : Math.min(limitParam, 100);
 
@@ -21,10 +22,65 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    if (usernameParam) {
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("id, username")
+        .eq("username", usernameParam)
+        .maybeSingle();
+
+      if (userError) {
+        console.error("leaderboard user lookup error:", JSON.stringify(userError));
+        return new Response(JSON.stringify({ error: userError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Bruker ikke funnet" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: catches, error: catchesError } = await supabase
+        .from("catches")
+        .select("species_id")
+        .eq("user_id", user.id)
+        .eq("counted_in_leaderboard", true);
+
+      if (catchesError) {
+        console.error("leaderboard user catches query error:", JSON.stringify(catchesError));
+        return new Response(JSON.stringify({ error: catchesError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const speciesCountMap = new Map<string, number>();
+      for (const row of (catches ?? []) as Array<{ species_id: string }>) {
+        speciesCountMap.set(row.species_id, (speciesCountMap.get(row.species_id) ?? 0) + 1);
+      }
+
+      const species = Array.from(speciesCountMap.entries())
+        .map(([species_id, count]) => ({ species_id, count }))
+        .sort((a, b) => b.count - a.count || a.species_id.localeCompare(b.species_id));
+
+      return new Response(JSON.stringify({
+        username: user.username,
+        total_valid_catches: species.length,
+        unique_species_count: species.length,
+        species,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Query catches joined with users — include EXIF, device, and location data for authenticity scoring
     const { data: rawData, error } = await supabase
       .from("catches")
-      .select("points_awarded, users!inner(username, id), has_exif, device_make, lat, lng")
+      .select("species_id, points_awarded, users!inner(username, id), has_exif, device_make, lat, lng")
       .eq("counted_in_leaderboard", true);
 
     if (error) {
@@ -41,14 +97,22 @@ Deno.serve(async (req) => {
       valid_catch_count: number;
       user_id: string;
       catches: Array<{ has_exif: boolean; device_make: string | null; lat: number | null; lng: number | null }>;
+      countedSpecies: Set<string>;
     }
     const scoreMap = new Map<string, UserData>();
-    for (const row of (rawData ?? []) as Array<{ users: { username: string; id: string }; points_awarded: number; has_exif: boolean; device_make: string | null; lat: number | null; lng: number | null }>) {
+    for (const row of (rawData ?? []) as Array<{ species_id: string; users: { username: string; id: string }; points_awarded: number; has_exif: boolean; device_make: string | null; lat: number | null; lng: number | null }>) {
       const name = row.users.username;
       const userId = row.users.id;
-      const prev = scoreMap.get(name) ?? { score: 0, valid_catch_count: 0, user_id: userId, catches: [] };
+      const prev = scoreMap.get(name) ?? { score: 0, valid_catch_count: 0, user_id: userId, catches: [], countedSpecies: new Set<string>() };
       prev.catches.push({ has_exif: row.has_exif, device_make: row.device_make, lat: row.lat, lng: row.lng });
-      scoreMap.set(name, { score: prev.score + row.points_awarded, valid_catch_count: prev.valid_catch_count + 1, user_id: userId, catches: prev.catches });
+
+      if (!prev.countedSpecies.has(row.species_id)) {
+        prev.countedSpecies.add(row.species_id);
+        prev.score += row.points_awarded;
+        prev.valid_catch_count += 1;
+      }
+
+      scoreMap.set(name, prev);
     }
 
     // Compute authenticity score for each user
