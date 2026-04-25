@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const DAILY_POINTS = 10;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -134,8 +136,8 @@ Deno.serve(async (req) => {
       prev.catches.push({ has_exif: row.has_exif, device_make: row.device_make, lat: row.lat, lng: row.lng });
 
       if (row.is_daily) {
-        // Daily catches always count, each worth points_awarded (10 pts)
-        prev.score += row.points_awarded;
+        // Daily catches always count as a fixed 10 pts.
+        prev.score += DAILY_POINTS;
         prev.daily_catch_count += 1;
       } else if (!prev.countedSpecies.has(row.species_id)) {
         // Regular catches: only count once per unique species

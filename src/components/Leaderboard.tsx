@@ -130,6 +130,8 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
             const isMe = row.username === currentUsername;
             const medal = medalEmoji(row.rank);
             const auth = authenticityIcon(row.authenticity_score, row.has_suspicious_activity);
+            const dailyPoints = row.daily_catch_count * 10;
+            const regularPoints = row.score - dailyPoints;
             return (
               <button
                 key={row.username}
@@ -148,8 +150,11 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
                   {row.username}
                   {isMe && <span className="ml-2 text-xs text-green-600 font-normal">(deg)</span>}
                 </span>
-                <span className="text-yellow-500 font-bold text-sm shrink-0">
-                  {row.score} ⭐
+                <span className="text-right shrink-0">
+                  <span className="text-yellow-500 font-bold text-sm">{row.score} ⭐</span>
+                  {row.daily_catch_count > 0 && (
+                    <span className="block text-xs text-amber-500">({regularPoints} + {dailyPoints} 🌟 daglig)</span>
+                  )}
                 </span>
                 <span className={`text-sm shrink-0 ${auth.color}`} title={auth.label}>
                   {auth.icon}
