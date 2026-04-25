@@ -132,6 +132,7 @@ export async function confirmCatch(
     hasExif?: boolean;
     deviceMake?: string;
     deviceModel?: string;
+    isDaily?: boolean;
   } = {}
 ): Promise<ConfirmCatchResponse> {
   if (!speciesId || !rarity) {
@@ -153,6 +154,8 @@ export async function confirmCatch(
       deviceMake: options.deviceMake,
       device_model: options.deviceModel,
       deviceModel: options.deviceModel,
+      is_daily: options.isDaily ?? false,
+      isDaily: options.isDaily ?? false,
     },
     headers: { Authorization: `Bearer ${sessionToken}` },
   });

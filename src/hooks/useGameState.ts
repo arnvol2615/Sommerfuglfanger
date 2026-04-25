@@ -28,7 +28,7 @@ const DEFAULT_STATE: GameState = {
 };
 
 const BASE_POINTS = 10;
-const DAILY_BONUS_POINTS = 50;
+const DAILY_POINTS = 10;
 
 function todayString(): string {
   const d = new Date();
@@ -81,25 +81,36 @@ export function useGameState() {
 
   const registerSpecies = useCallback(
     (speciesId: string, rarity: Rarity, location?: GpsLocation): { isNew: boolean; points: number; isDailyBonus: boolean; bonusPoints: number } => {
-      if (state.foundSpecies[speciesId]) {
-        return { isNew: false, points: 0, isDailyBonus: false, bonusPoints: 0 };
-      }
-      const points = Math.round(BASE_POINTS * getRarityMultiplier(rarity));
-
       const daily = getDailyButterfly();
       const today = todayString();
       const isDailyBonus = speciesId === daily.id && state.dailyBonusClaimed !== today;
-      const bonusPoints = isDailyBonus ? DAILY_BONUS_POINTS : 0;
+      const alreadyFound = Boolean(state.foundSpecies[speciesId]);
 
-      setState(prev => ({
-        foundSpecies: {
-          ...prev.foundSpecies,
-          [speciesId]: { speciesId, foundAt: Date.now(), points: points + bonusPoints, location },
-        },
-        totalPoints: prev.totalPoints + points + bonusPoints,
-        dailyBonusClaimed: isDailyBonus ? today : prev.dailyBonusClaimed,
-      }));
-      return { isNew: true, points, isDailyBonus, bonusPoints };
+      // Block repeat catches unless this is the unclaimed daily butterfly
+      if (alreadyFound && !isDailyBonus) {
+        return { isNew: false, points: 0, isDailyBonus: false, bonusPoints: 0 };
+      }
+
+      // Daily catch: always 10 pts shown as bonusPoints so the modal displays correctly
+      // New regular species: rarity-based points
+      const basePoints = isDailyBonus ? 0 : Math.round(BASE_POINTS * getRarityMultiplier(rarity));
+      const bonusPoints = isDailyBonus ? DAILY_POINTS : 0;
+      const totalNew = basePoints + bonusPoints;
+
+      setState(prev => {
+        const newFoundSpecies = alreadyFound
+          ? prev.foundSpecies
+          : {
+              ...prev.foundSpecies,
+              [speciesId]: { speciesId, foundAt: Date.now(), points: basePoints, location },
+            };
+        return {
+          foundSpecies: newFoundSpecies,
+          totalPoints: prev.totalPoints + totalNew,
+          dailyBonusClaimed: isDailyBonus ? today : prev.dailyBonusClaimed,
+        };
+      });
+      return { isNew: !alreadyFound, points: basePoints, isDailyBonus, bonusPoints };
     },
     [state.foundSpecies, state.dailyBonusClaimed]
   );

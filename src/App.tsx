@@ -150,6 +150,7 @@ function AppContent() {
         lat: location?.lat,
         lng: location?.lng,
         hasExif,
+        isDaily: isDailyBonus,
       }).catch(err => {
         console.error('Backend catch save failed:', err);
         // Still show success locally even if backend call fails
@@ -217,7 +218,7 @@ function AppContent() {
                 {state.dailyBonusClaimed === new Date().toISOString().slice(0, 10) ? (
                   <p className="mt-1 text-xs text-green-700 font-semibold">✅ Bonus allerede hentet i dag!</p>
                 ) : (
-                  <p className="mt-1 text-xs text-amber-600">Finn den og få +50 bonusstjerner!</p>
+                  <p className="mt-1 text-xs text-amber-600">Finn den og få +10 bonusstjerner – selv om du har fanget den før!</p>
                 )}
               </div>
               {dailyPhotoUrl && (

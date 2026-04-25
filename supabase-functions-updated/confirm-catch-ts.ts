@@ -16,6 +16,49 @@ const RARITY_MULTIPLIER: Record<string, number> = {
   "Vanlig": 1,
 };
 
+const DAILY_POINTS = 10;
+
+// Same order as src/data/butterflies.ts BASE_SPECIES array
+const SPECIES_IDS: string[] = [
+  "aglais-urticae", "aglais-io", "vanessa-atalanta", "vanessa-cardui",
+  "polygonia-c-album", "nymphalis-polychloros", "nymphalis-antiopa", "nymphalis-c-album",
+  "araschnia-levana", "argynnis-paphia", "argynnis-aglaja", "argynnis-adippe",
+  "argynnis-niobe", "brenthis-ino", "boloria-selene", "boloria-euphrosyne",
+  "boloria-aquilonaris", "boloria-frigga", "boloria-freija", "boloria-impromissa",
+  "euphydryas-iduna", "melitaea-cinxia", "melitaea-athalia", "melitaea-diamina",
+  "limenitis-populi", "apatura-iris", "lasiommata-megera", "lasiommata-maera",
+  "pararge-aegeria", "coenonympha-pamphilus", "coenonympha-tullia", "aphantopus-hyperantus",
+  "maniola-jurtina", "erebia-ligea", "erebia-euryale", "erebia-embla",
+  "erebia-disa", "oeneis-jutta", "oeneis-bore", "oeneis-norna",
+  "lycaena-phlaeas", "lycaena-hippothoe", "lycaena-virgaureae", "thecla-betulae",
+  "callophrys-rubi", "favonius-quercus", "cupido-minimus", "everes-argiades",
+  "celastrina-argiolus", "plebejus-argus", "plebejus-idas", "aricia-artaxerxes",
+  "polyommatus-icarus", "agriades-aquilo", "agriades-glandon", "pieris-brassicae",
+  "pieris-rapae", "pieris-napi", "pieris-dulcinea", "pontia-edusa",
+  "anthocharis-cardamines", "colias-palaeno", "colias-hecla", "colias-nastes",
+  "colias-hyale", "gonepteryx-rhamni", "leptidea-sinapis", "leptidea-juvernica",
+  "papilio-machaon", "iphiclides-podalirius", "parnassius-apollo", "parnassius-mnemosyne",
+  "ochlodes-sylvanus", "thymelicus-sylvestris", "thymelicus-lineola", "hesperia-comma",
+  "carterocephalus-palaemon", "erynnis-tages", "pyrgus-malvae", "pyrgus-centaureae",
+];
+
+function getTodayString(): string {
+  const d = new Date();
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function getDailySpeciesId(): string {
+  const dateStr = getTodayString();
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash * 31 + dateStr.charCodeAt(i)) >>> 0;
+  }
+  return SPECIES_IDS[hash % SPECIES_IDS.length];
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -57,6 +100,8 @@ Deno.serve(async (req) => {
     deviceMake?: string;
     device_model?: string;
     deviceModel?: string;
+    is_daily?: boolean;
+    isDaily?: boolean;
   };
 
   console.log('confirm-catch-ts received body:', JSON.stringify(body, null, 2));
@@ -89,7 +134,6 @@ Deno.serve(async (req) => {
     ? normalizedVisionScore * 100
     : normalizedVisionScore;
   const visionScore = Math.round(visionScorePercent);
-  const points = Math.round(10 * (RARITY_MULTIPLIER[rarity] ?? 1));
   const suspicionFlags: string[] = [];
 
   // Anti-cheat: check same location catches
@@ -98,6 +142,78 @@ Deno.serve(async (req) => {
     suspicionFlags.push("missing_exif");
   }
 
+  // ── Daily catch path ────────────────────────────────────────────────────────
+  const isDaily = body.is_daily ?? body.isDaily ?? false;
+
+  if (isDaily) {
+    const dailySpeciesId = getDailySpeciesId();
+    if (speciesId !== dailySpeciesId) {
+      return new Response(JSON.stringify({ error: "Denne arten er ikke dagens sommerfugl" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if user has already claimed the daily catch today (UTC date)
+    const todayStart = `${getTodayString()}T00:00:00.000Z`;
+    const { count: dailyClaimedCount, error: dailyErr } = await supabase
+      .from("catches")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", session.user_id)
+      .eq("is_daily", true)
+      .gte("found_at", todayStart);
+
+    if (dailyErr) {
+      return new Response(JSON.stringify({ error: `Database error: ${dailyErr.message}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if ((dailyClaimedCount ?? 0) > 0) {
+      return new Response(JSON.stringify({ error: "Du har allerede krevd dagens sommerfugl i dag" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { error: insertErr } = await supabase.from("catches").insert({
+      user_id: session.user_id,
+      species_id: speciesId,
+      rarity,
+      vision_score: visionScore,
+      points_awarded: DAILY_POINTS,
+      lat: body.lat ?? null,
+      lng: body.lng ?? null,
+      has_exif: hasExif,
+      device_make: body.device_make ?? body.deviceMake ?? null,
+      device_model: body.device_model ?? body.deviceModel ?? null,
+      counted_in_leaderboard: true,
+      suspicion_flags: suspicionFlags,
+      is_daily: true,
+    });
+
+    if (insertErr) {
+      return new Response(JSON.stringify({ error: `Database error: ${insertErr.message}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        pointsAwarded: DAILY_POINTS,
+        countedInLeaderboard: true,
+        suspicionFlags,
+        isDaily: true,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // ── Regular catch path ──────────────────────────────────────────────────────
+  const points = Math.round(10 * (RARITY_MULTIPLIER[rarity] ?? 1));
   let countedInLeaderboard = true;
 
   const { count: existingSpeciesCount, error: existingSpeciesErr } = await supabase
@@ -105,7 +221,8 @@ Deno.serve(async (req) => {
     .select("id", { count: "exact", head: true })
     .eq("user_id", session.user_id)
     .eq("species_id", speciesId)
-    .eq("counted_in_leaderboard", true);
+    .eq("counted_in_leaderboard", true)
+    .eq("is_daily", false);
 
   if (existingSpeciesErr) {
     return new Response(JSON.stringify({ error: `Database error: ${existingSpeciesErr.message}` }), {
@@ -155,6 +272,7 @@ Deno.serve(async (req) => {
     device_model: body.device_model ?? body.deviceModel ?? null,
     counted_in_leaderboard: countedInLeaderboard,
     suspicion_flags: suspicionFlags,
+    is_daily: false,
   });
 
   if (insertErr) {
