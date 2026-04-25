@@ -18,6 +18,7 @@ export function LoginScreen() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showInstall, setShowInstall] = useState(false);
 
   async function handleAuth() {
     const trimmedUsername = username.trim();
@@ -177,6 +178,46 @@ export function LoginScreen() {
           </button>
         )}
 
+      </div>
+
+      <div className="w-full max-w-sm">
+        <button
+          type="button"
+          onClick={() => setShowInstall(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <span>📲 Installer som app</span>
+          <span className="text-gray-400 text-xs">{showInstall ? '▲' : '▼'}</span>
+        </button>
+
+        {showInstall && (
+          <div className="mt-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-sm text-gray-600 space-y-4">
+            <div className="space-y-1.5">
+              <p className="font-semibold text-gray-700 flex items-center gap-1.5">
+                <span>🤖</span> Android (Chrome)
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-gray-600">
+                <li>Trykk på menyknappen <span className="font-mono bg-gray-100 px-1 rounded">⋮</span> øverst til høyre</li>
+                <li>Velg <span className="font-medium">«Legg til på startskjermen»</span></li>
+                <li>Trykk <span className="font-medium">«Legg til»</span></li>
+              </ol>
+            </div>
+
+            <div className="border-t border-gray-100" />
+
+            <div className="space-y-1.5">
+              <p className="font-semibold text-gray-700 flex items-center gap-1.5">
+                <span>🍎</span> iPhone/iPad (Safari)
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-gray-600">
+                <li>Trykk på del-knappen <span className="font-mono bg-gray-100 px-1 rounded">⎋</span> nederst i nettleseren</li>
+                <li>Scroll ned og velg <span className="font-medium">«Legg til på Hjem-skjerm»</span></li>
+                <li>Trykk <span className="font-medium">«Legg til»</span></li>
+              </ol>
+              <p className="text-xs text-gray-400">Merk: Åpne siden i Safari, ikke Chrome, for denne muligheten.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-gray-400 max-w-xs">
