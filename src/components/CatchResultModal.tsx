@@ -1,4 +1,57 @@
+import { useState } from 'react';
 import type { Species } from '../data/butterflies';
+
+interface StarParticle {
+  id: number;
+  left: string;
+  fontSize: string;
+  duration: string;
+  delay: string;
+  char: string;
+}
+
+const STAR_CONFIGS: Record<Species['rarity'], { count: number; chars: string[] }> = {
+  'Vanlig':        { count: 0,  chars: [] },
+  'Uvanlig':       { count: 20, chars: ['✨', '⭐', '✦'] },
+  'Sjelden':       { count: 40, chars: ['⭐', '🌟', '✨', '💫'] },
+  'Svaert sjelden':{ count: 65, chars: ['🌟', '⭐', '✨', '💫', '👑', '💥'] },
+};
+
+function generateStars(rarity: Species['rarity']): StarParticle[] {
+  const cfg = STAR_CONFIGS[rarity];
+  return Array.from({ length: cfg.count }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    fontSize: `${0.8 + Math.random() * 1.4}rem`,
+    duration: `${2.4 + Math.random() * 1.6}s`,
+    delay: `${Math.random() * 1.2}s`,
+    char: cfg.chars[Math.floor(Math.random() * cfg.chars.length)],
+  }));
+}
+
+function StarShower({ rarity }: { rarity: Species['rarity'] }) {
+  const [stars] = useState(() => generateStars(rarity));
+  if (stars.length === 0) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[60] overflow-hidden">
+      {stars.map(star => (
+        <span
+          key={star.id}
+          style={{
+            position: 'absolute',
+            top: '-24px',
+            left: star.left,
+            fontSize: star.fontSize,
+            animation: `starFall ${star.duration} ${star.delay} linear forwards`,
+          }}
+        >
+          {star.char}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 interface CatchResultModalProps {
   species: Species;
@@ -78,6 +131,8 @@ export function CatchResultModal({
   const visual = rarityVisual(species.rarity);
 
   return (
+    <>
+    <StarShower rarity={species.rarity} />
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-[fadeIn_.2s_ease-out]">
         <div className="relative p-5 bg-gradient-to-b from-green-50 to-white">
@@ -132,5 +187,6 @@ export function CatchResultModal({
         </div>
       </div>
     </div>
+    </>
   );
 }
