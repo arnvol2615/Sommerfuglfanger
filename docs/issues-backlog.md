@@ -59,6 +59,47 @@ Acceptance criteria:
 - Token lagres kun som secret (ikke i frontend, ikke i repo).
 - Deploy-checklist inneholder verifisering av gyldig token etter deploy.
 
+### 14) Avklar om iNaturalist API-noekkel kan oppdateres automatisk
+Labels: auth, vision, high
+Status: AVKLART (2026-04-24)
+
+Maal:
+Avklare teknisk og praktisk om `INAT_API_TOKEN` kan fornyes automatisk etter endringene i iNaturalist API-token-flyt.
+
+Bakgrunn:
+- iNaturalist forum: https://forum.inaturalist.org/t/api-token-can-no-longer-be-obtained-non-interactively/77160
+- Dette kan bety at dagens antakelse om automatisk ikke-interaktiv token-oppdatering ikke lenger er gyldig.
+
+Konklusjon (avklart 2026-04-24):
+Automatisk token-refresh er IKKE mulig uten en godkjent OAuth-app fra iNaturalist.
+
+Teknisk forklaring:
+- `INAT_API_TOKEN` er en JWT som utloeper etter 24 timer.
+- For aa hente ny JWT ikke-interaktivt kreves to steg:
+    1. POST /oauth/token med client_id + client_secret + brukernavn + passord -> OAuth access token
+    2. GET /users/api_token med OAuth-token -> ny JWT
+- Siden 2022 krever iNaturalist manuell godkjenning for aa faa client_id/secret ("app owner").
+  Krav: konto minst 2 maaneder gammel + minst 10 forbedrende identifikasjoner siste maaned.
+- Det finnes ingen offisiell maate aa kalle /users/api_token direkte med brukernavn+passord.
+
+Anbefalt rutine for manuell token-rotasjon:
+1. Aapne https://www.inaturalist.org/users/api_token i nettleser (logg inn som app-brukeren)
+2. Kopier JWT-verdien fra JSON-svaret
+3. Oppdater Supabase secret: Settings -> Edge Functions -> INAT_API_TOKEN
+4. Verifiser at identifikasjon fungerer i appen
+5. Trigger: naar 401-feil dukker opp i Supabase Edge Function-logg (se issue #13)
+
+Langsiktig losning:
+- Sok om "app owner"-status paa iNaturalist (https://www.inaturalist.org/oauth/app_owner_application)
+- Naar godkjent: implementer automatisk refresh via Resource Owner Password-flyt
+  og lagre INAT_CLIENT_ID, INAT_CLIENT_SECRET, INAT_USERNAME, INAT_PASSWORD som Supabase secrets.
+
+Acceptance criteria:
+- [x] Dokumentert om automatisk token-oppdatering er mulig eller ikke.
+- [x] Manuell rotasjonsprosess beskrevet med steg, trigger og ansvar.
+- [ ] Oppdater DEPLOYMENT_CHECKLIST.md med verifisering av gyldig token etter deploy.
+- [ ] Sok om app owner-status naar kontoen moeter kriteriene.
+
 ## Prioritet Medium
 
 ### 4) Legg til offline-ko og retry for bildeanalyse
