@@ -77,7 +77,8 @@ CREATE TABLE catches (
   captured_at timestamptz,
   found_at timestamptz NOT NULL DEFAULT now(),
   counted_in_leaderboard boolean NOT NULL DEFAULT true,
-  suspicion_flags jsonb NOT NULL DEFAULT '[]'::jsonb
+  suspicion_flags jsonb NOT NULL DEFAULT '[]'::jsonb,
+  is_daily boolean NOT NULL DEFAULT false
 );
 
 -- Create indexes for efficient queries
@@ -149,6 +150,10 @@ ORDER BY total_score DESC;
 --   ADD CONSTRAINT users_username_format_check
 --   CHECK (username ~ '^[a-zA-Z0-9_.-]{3,32}$');
 -- COMMIT;
+
+-- 6c. Migration: add is_daily column to existing catches table
+-- ALTER TABLE catches ADD COLUMN IF NOT EXISTS is_daily boolean NOT NULL DEFAULT false;
+-- CREATE INDEX IF NOT EXISTS idx_catches_daily ON catches(user_id, is_daily, found_at DESC);
 
 -- 7. Create function to compute user authenticity score
 CREATE OR REPLACE FUNCTION compute_user_authenticity(user_id_param uuid)

@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     // Query catches joined with users — include EXIF, device, and location data for authenticity scoring
     const { data: rawData, error } = await supabase
       .from("catches")
-      .select("species_id, points_awarded, users!inner(username, id), has_exif, device_make, lat, lng")
+      .select("species_id, points_awarded, is_daily, users!inner(username, id), has_exif, device_make, lat, lng")
       .eq("counted_in_leaderboard", true);
 
     if (error) {
@@ -121,18 +121,24 @@ Deno.serve(async (req) => {
     interface UserData {
       score: number;
       valid_catch_count: number;
+      daily_catch_count: number;
       user_id: string;
       catches: Array<{ has_exif: boolean; device_make: string | null; lat: number | null; lng: number | null }>;
       countedSpecies: Set<string>;
     }
     const scoreMap = new Map<string, UserData>();
-    for (const row of (rawData ?? []) as Array<{ species_id: string; users: { username: string; id: string }; points_awarded: number; has_exif: boolean; device_make: string | null; lat: number | null; lng: number | null }>) {
+    for (const row of (rawData ?? []) as Array<{ species_id: string; users: { username: string; id: string }; points_awarded: number; is_daily: boolean; has_exif: boolean; device_make: string | null; lat: number | null; lng: number | null }>) {
       const name = row.users.username;
       const userId = row.users.id;
-      const prev = scoreMap.get(name) ?? { score: 0, valid_catch_count: 0, user_id: userId, catches: [], countedSpecies: new Set<string>() };
+      const prev = scoreMap.get(name) ?? { score: 0, valid_catch_count: 0, daily_catch_count: 0, user_id: userId, catches: [], countedSpecies: new Set<string>() };
       prev.catches.push({ has_exif: row.has_exif, device_make: row.device_make, lat: row.lat, lng: row.lng });
 
-      if (!prev.countedSpecies.has(row.species_id)) {
+      if (row.is_daily) {
+        // Daily catches always count, each worth points_awarded (10 pts)
+        prev.score += row.points_awarded;
+        prev.daily_catch_count += 1;
+      } else if (!prev.countedSpecies.has(row.species_id)) {
+        // Regular catches: only count once per unique species
         prev.countedSpecies.add(row.species_id);
         prev.score += row.points_awarded;
         prev.valid_catch_count += 1;
@@ -177,6 +183,7 @@ Deno.serve(async (req) => {
           username,
           score: s.score,
           valid_catch_count: s.valid_catch_count,
+          daily_catch_count: s.daily_catch_count,
           authenticity_score: auth.authenticity_score,
           has_suspicious_activity: auth.has_suspicious_activity,
         };
