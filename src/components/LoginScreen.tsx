@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/useAuth';
 import { login, register } from '../services/supabaseApi';
+import { PrivacyPolicy } from './PrivacyPolicy';
 
 type AuthMode = 'login' | 'register';
 
@@ -16,6 +17,7 @@ export function LoginScreen() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   async function handleAuth() {
     const trimmedUsername = username.trim();
@@ -178,8 +180,17 @@ export function LoginScreen() {
       </div>
 
       <p className="text-xs text-gray-400 max-w-xs">
-        Sesjonen lagres kun paa din enhet.
+        Sesjonen lagres kun på din enhet.{' '}
+        <button
+          type="button"
+          onClick={() => setShowPrivacy(true)}
+          className="underline hover:text-gray-600"
+        >
+          Personvernerklæring
+        </button>
       </p>
+
+      {showPrivacy && <PrivacyPolicy onClose={() => setShowPrivacy(false)} />}
     </div>
   );
 }
