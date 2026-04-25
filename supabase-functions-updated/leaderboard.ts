@@ -22,6 +22,32 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    if (url.searchParams.get("heatmap") === "true") {
+      const { data: heatData, error: heatError } = await supabase
+        .from("catches")
+        .select("lat, lng")
+        .eq("counted_in_leaderboard", true)
+        .not("lat", "is", null)
+        .not("lng", "is", null);
+
+      if (heatError) {
+        return new Response(JSON.stringify({ error: heatError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Round to ~1km precision before sending to client
+      const points = (heatData ?? []).map((row: { lat: number; lng: number }) => ({
+        lat: Math.round(row.lat * 100) / 100,
+        lng: Math.round(row.lng * 100) / 100,
+      }));
+
+      return new Response(JSON.stringify({ points }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (usernameParam) {
       const { data: user, error: userError } = await supabase
         .from("users")
