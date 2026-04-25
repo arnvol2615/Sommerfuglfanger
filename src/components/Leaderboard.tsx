@@ -6,12 +6,14 @@ import {
   type LeaderboardUserCollection,
 } from '../services/supabaseApi';
 import { SPECIES_BY_ID } from '../data/butterflies';
+import { CatchMap } from './CatchMap';
 
 interface LeaderboardProps {
   currentUsername: string | null;
 }
 
 export function Leaderboard({ currentUsername }: LeaderboardProps) {
+  const [activeTab, setActiveTab] = useState<'liste' | 'kart'>('liste');
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,24 +73,58 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
 
   return (
     <div className="flex flex-col min-h-0 pb-4">
-      <div className="px-4 pt-4 pb-3">
-        <h2 className="text-xl font-bold text-gray-800">🏆 Toppliste</h2>
-        <p className="text-sm text-gray-500">Topp 50 sommerfuglfangere</p>
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">
+            {activeTab === 'liste' ? '🏆 Toppliste' : '🗺️ Funnkart'}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {activeTab === 'liste' ? 'Topp 50 sommerfuglfangere' : 'Hvor sommerfuglene er fanget'}
+          </p>
+        </div>
+        <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab('liste')}
+            className={
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ' +
+              (activeTab === 'liste'
+                ? 'bg-white text-gray-800 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700')
+            }
+          >
+            Liste
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('kart')}
+            className={
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ' +
+              (activeTab === 'kart'
+                ? 'bg-white text-gray-800 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700')
+            }
+          >
+            Kart
+          </button>
+        </div>
       </div>
 
-      {loading && (
+      {activeTab === 'kart' && <CatchMap />}
+
+      {activeTab === 'liste' && loading && (
         <div className="flex justify-center items-center py-16 text-gray-400 text-sm">
           Laster highscore…
         </div>
       )}
 
-      {error && (
+      {activeTab === 'liste' && error && (
         <div className="mx-4 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {!loading && !error && (
+      {activeTab === 'liste' && !loading && !error && (
         <div className="flex flex-col mx-4 gap-0 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-white">
           {top50.map((row) => {
             const isMe = row.username === currentUsername;
@@ -133,7 +169,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
         </div>
       )}
 
-      {!loading && !error && !currentUserInTop50 && currentUsername && (
+      {activeTab === 'liste' && !loading && !error && !currentUserInTop50 && currentUsername && (
         <div className="mx-4 mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="px-4 py-2 text-xs text-gray-400 border-b border-dashed border-gray-200">
             ·  ·  ·  Din plassering

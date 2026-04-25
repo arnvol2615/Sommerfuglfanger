@@ -197,6 +197,21 @@ export interface LeaderboardUserCollection {
   species: LeaderboardUserSpeciesRow[];
 }
 
+export interface HeatmapPoint {
+  lat: number;
+  lng: number;
+}
+
+export async function getCatchHeatmapPoints(): Promise<HeatmapPoint[]> {
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/leaderboard?heatmap=true`,
+    { headers: { apikey: SUPABASE_ANON_KEY } }
+  );
+  const data = (await response.json()) as { points: HeatmapPoint[] } & { error?: string };
+  if (!response.ok) throw new Error(data.error ?? 'Heatmap feilet');
+  return data.points;
+}
+
 export async function getLeaderboardUserCollection(username: string): Promise<LeaderboardUserCollection> {
   const response = await fetch(
     `${SUPABASE_URL}/functions/v1/leaderboard?username=${encodeURIComponent(username)}`,
