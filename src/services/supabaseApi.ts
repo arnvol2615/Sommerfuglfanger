@@ -170,6 +170,7 @@ export interface LeaderboardRow {
   username: string;
   score: number;
   valid_catch_count: number;
+  daily_catch_count: number;
   authenticity_score: number;
   has_suspicious_activity: boolean;
 }
@@ -200,6 +201,15 @@ export interface LeaderboardUserCollection {
   species: LeaderboardUserSpeciesRow[];
 }
 
+export interface MyCollectionResponse {
+  leaderboard_score: number;
+  valid_catch_count: number;
+  daily_catch_count: number;
+  unique_species_count: number;
+  total_catch_count: number;
+  found_species_ids: string[];
+}
+
 export interface HeatmapPoint {
   lat: number;
   lng: number;
@@ -226,5 +236,18 @@ export async function getLeaderboardUserCollection(username: string): Promise<Le
   );
   const data = (await response.json()) as LeaderboardUserCollection & { error?: string };
   if (!response.ok) throw new Error(data.error ?? 'Kunne ikke hente brukerens funn');
+  return data;
+}
+
+export async function getMyCollection(sessionToken: string): Promise<MyCollectionResponse> {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/my-collection`, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${sessionToken}`,
+    },
+  });
+
+  const data = (await response.json()) as MyCollectionResponse & { error?: string };
+  if (!response.ok) throw new Error(data.error ?? 'Kunne ikke hente min samling');
   return data;
 }

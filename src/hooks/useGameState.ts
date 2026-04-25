@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { SPECIES } from '../data/butterflies';
+import { SPECIES, SPECIES_BY_ID } from '../data/butterflies';
 import type { Rarity, Species } from '../data/butterflies';
 
 export interface GpsLocation {
@@ -61,11 +61,28 @@ function getRarityMultiplier(rarity: Rarity): number {
 function loadState(): GameState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as GameState;
+    if (raw) {
+      const parsed = JSON.parse(raw) as GameState;
+      return migrateState(parsed);
+    }
   } catch {
     // ignore corrupt data
   }
   return DEFAULT_STATE;
+}
+
+// Recompute totalPoints from known rarity values to fix legacy localStorage
+// where daily bonus was 50 pts. Now: base rarity pts + 10 if daily was claimed.
+function migrateState(state: GameState): GameState {
+  const recomputed = Object.values(state.foundSpecies).reduce((sum, entry) => {
+    const species = SPECIES_BY_ID[entry.speciesId];
+    if (!species) return sum;
+    return sum + Math.round(BASE_POINTS * getRarityMultiplier(species.rarity));
+  }, 0);
+  const dailyBonus = state.dailyBonusClaimed ? DAILY_POINTS : 0;
+  const corrected = recomputed + dailyBonus;
+  if (corrected === state.totalPoints) return state;
+  return { ...state, totalPoints: corrected };
 }
 
 function saveState(state: GameState) {

@@ -10,7 +10,7 @@ import { FamilyList } from "./components/FamilyList";
 import { LoginScreen } from "./components/LoginScreen";
 import { CatchResultModal } from "./components/CatchResultModal";
 import { Leaderboard } from "./components/Leaderboard";
-import { scoreImageViaBackend, confirmCatch } from "./services/supabaseApi";
+import { scoreImageViaBackend, confirmCatch, getMyCollection } from "./services/supabaseApi";
 import type { VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
@@ -33,6 +33,11 @@ interface LastCatch {
   familyTotal: number;
   isDailyBonus: boolean;
   bonusPoints: number;
+}
+
+interface ServerCollectionStats {
+  leaderboardScore: number;
+  uniqueSpeciesCount: number;
 }
 
 async function hasExifMetadata(file: File): Promise<boolean> {
@@ -95,6 +100,10 @@ function AppContent() {
   const [pending, setPending] = useState<PendingIdentification | null>(null);
   const [lastCatch, setLastCatch] = useState<LastCatch | null>(null);
   const [dailyPhotoUrl, setDailyPhotoUrl] = useState<string | null>(null);
+  const [serverFoundSpeciesIds, setServerFoundSpeciesIds] = useState<string[] | null>(null);
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [serverCollectionStats, setServerCollectionStats] = useState<ServerCollectionStats | null>(null);
+  const collectionLoading = serverFoundSpeciesIds === null && collectionError === null;
 
   useEffect(() => {
     const sciName = encodeURIComponent(dailyButterfly.name_sci);
@@ -106,6 +115,33 @@ function AppContent() {
       })
       .catch(() => { /* silently ignore, photo is optional */ });
   }, [dailyButterfly.name_sci]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !sessionToken) return;
+
+    let cancelled = false;
+
+    getMyCollection(sessionToken)
+      .then((data) => {
+        if (cancelled) return;
+        setServerFoundSpeciesIds(data.found_species_ids);
+        setServerCollectionStats({
+          leaderboardScore: data.leaderboard_score,
+          uniqueSpeciesCount: data.unique_species_count,
+        });
+        setCollectionError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setCollectionError(err instanceof Error ? err.message : 'Kunne ikke hente samling');
+        setServerFoundSpeciesIds(null);
+        setServerCollectionStats(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, sessionToken]);
 
   if (!isAuthenticated) {
     return <LoginScreen />;
@@ -135,6 +171,25 @@ function AppContent() {
 
     const doRegister = async (location?: { lat: number; lng: number }) => {
       const { isNew, points, isDailyBonus, bonusPoints } = registerSpecies(species.id, species.rarity, location);
+      const earnedNow = points + bonusPoints;
+
+      if (earnedNow > 0 || isNew) {
+        setServerCollectionStats(prev => {
+          if (!prev) return prev;
+          return {
+            leaderboardScore: prev.leaderboardScore + earnedNow,
+            uniqueSpeciesCount: prev.uniqueSpeciesCount + (isNew ? 1 : 0),
+          };
+        });
+      }
+
+      if (isNew) {
+        setServerFoundSpeciesIds(prev => {
+          if (!prev) return prev;
+          if (prev.includes(species.id)) return prev;
+          return [...prev, species.id];
+        });
+      }
 
       let hasExif = false;
       try {
@@ -187,8 +242,8 @@ function AppContent() {
     <div className="flex flex-col min-h-svh">
       <ScoreHeader
         username={username}
-        totalPoints={state.totalPoints}
-        foundCount={Object.keys(state.foundSpecies).length}
+        totalPoints={serverCollectionStats?.leaderboardScore ?? state.totalPoints}
+        foundCount={serverCollectionStats?.uniqueSpeciesCount ?? Object.keys(state.foundSpecies).length}
         totalCount={SPECIES.length}
         onCollectionClick={() => { setTab("collection"); setPending(null); }}
       />
@@ -231,7 +286,12 @@ function AppContent() {
             </div>
           </div>
         ) : (
-          <FamilyList gameState={state} />
+          <FamilyList
+            gameState={state}
+            foundSpeciesIds={serverFoundSpeciesIds ?? undefined}
+            apiLoading={collectionLoading}
+            apiError={collectionError}
+          />
         )}
       </main>
       {!pending && (

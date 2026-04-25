@@ -32,17 +32,28 @@ function rarityBadgeText(rarity: Rarity): string {
 
 interface FamilyListProps {
   gameState: GameState;
+  foundSpeciesIds?: string[];
+  apiLoading?: boolean;
+  apiError?: string | null;
 }
 
-export function FamilyList({ gameState }: FamilyListProps) {
+export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, apiError = null }: FamilyListProps) {
   const [openFamily, setOpenFamily] = useState<Family | null>(null);
+  const foundSpeciesSet = foundSpeciesIds ? new Set(foundSpeciesIds) : null;
+  const isFound = (speciesId: string) => foundSpeciesSet ? foundSpeciesSet.has(speciesId) : Boolean(gameState.foundSpecies[speciesId]);
 
   return (
     <div className="flex flex-col gap-3 p-4">
       <h2 className="text-xl font-bold text-gray-800">Min samling</h2>
+      {apiLoading && (
+        <p className="text-sm text-gray-500">Henter samling fra server…</p>
+      )}
+      {apiError && (
+        <p className="text-sm text-amber-700">Viser lokal samling. Serverfeil: {apiError}</p>
+      )}
       {FAMILIES.map(family => {
         const familySpecies = SPECIES.filter(s => s.family === family.id);
-        const foundCount = familySpecies.filter(s => gameState.foundSpecies[s.id]).length;
+        const foundCount = familySpecies.filter(s => isFound(s.id)).length;
         const total = familySpecies.length;
         const isOpen = openFamily === family.id;
 
@@ -76,7 +87,7 @@ export function FamilyList({ gameState }: FamilyListProps) {
             {isOpen && (
               <ul className="border-t border-gray-100 divide-y divide-gray-50">
                 {familySpecies.map(species => {
-                  const found = Boolean(gameState.foundSpecies[species.id]);
+                  const found = isFound(species.id);
                   return (
                     <li
                       key={species.id}
