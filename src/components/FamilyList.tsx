@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { FAMILIES, SPECIES, type Family, type Rarity } from '../data/butterflies';
+import { FamilyIllustration } from './FamilyIllustration';
 import type { GameState } from '../hooks/useGameState';
+
+function getArtsdatabankenUrl(adbTaxonId: number): string {
+  return `https://artsdatabanken.no/arter/takson/${adbTaxonId}`;
+}
+
+function getInaturalistUrl(inatTaxonId: number): string {
+  return `https://www.inaturalist.org/taxa/${inatTaxonId}`;
+}
 
 function rarityBadgeClasses(rarity: Rarity): string {
   switch (rarity) {
@@ -60,13 +69,13 @@ export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, api
         return (
           <div key={family.id} className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
             <button
-              className="w-full flex items-center justify-between px-4 py-4 text-left"
+              className="w-full flex items-center justify-between gap-4 px-4 py-4 text-left"
               onClick={() => setOpenFamily(isOpen ? null : family.id)}
               aria-expanded={isOpen}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{family.icon}</span>
-                <div>
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                <FamilyIllustration family={family.id} />
+                <div className="min-w-0">
                   <div className="font-semibold text-gray-800">{family.name}</div>
                   <div className="text-sm text-gray-500">
                     {foundCount} av {total} funnet
@@ -102,6 +111,25 @@ export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, api
                           <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${rarityBadgeClasses(species.rarity)}`}>
                             {rarityBadgeText(species.rarity)}
                           </span>
+                        </div>
+                        <div className="mt-1 text-xs flex items-center gap-2">
+                          <a
+                            href={getArtsdatabankenUrl(species.adbTaxonId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            Artsdatabanken
+                          </a>
+                          <span className="text-gray-300">•</span>
+                          <a
+                            href={getInaturalistUrl(species.inatTaxonId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            iNaturalist
+                          </a>
                         </div>
                       </div>
                       {found ? (
