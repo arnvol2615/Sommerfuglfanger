@@ -280,7 +280,7 @@ function AppContent() {
                 <img
                   src={dailyPhotoUrl}
                   alt={dailyButterfly.name_no}
-                  className="w-full h-36 object-cover"
+                  className="w-full h-36 object-contain bg-amber-100"
                 />
               )}
             </div>
