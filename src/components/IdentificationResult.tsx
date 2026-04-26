@@ -117,7 +117,10 @@ export function IdentificationResult({
     return (
       <div className="flex flex-col items-center gap-4 p-6 text-center">
         <img src={previewUrl} alt="Bilde" className="w-48 h-48 rounded-2xl object-cover" />
-        <p className="text-gray-700 font-medium">Ingen norsk dagsommerfugl funnet i bildet.</p>
+        <p className="text-gray-700 font-bold text-base">Ikke blant de 80 dagsommerfuglene</p>
+        <p className="text-sm text-gray-500 max-w-xs">
+          Appen gjenkjenner kun <span className="font-semibold text-gray-700">norske dagsommerfugler</span> (Papilionoidea). Det finnes mange andre arter – nattsvermere, møll og andre sommerfuglgrupper – som ikke gir treff her.
+        </p>
         {bestHit && (
           <div className="w-full max-w-xs rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-left">
             <p className="text-gray-500 mb-1">iNaturalist gjenkjente:</p>
@@ -133,7 +136,7 @@ export function IdentificationResult({
             </a>
           </div>
         )}
-        <p className="text-sm text-gray-500">Prøv å ta et nærmere bilde, helst mot en lys bakgrunn.</p>
+        <p className="text-sm text-gray-500">Prøv å ta et nærmere bilde av en dagsommerfugl, helst mot en lys bakgrunn.</p>
         <button
           onClick={onDismiss}
           className="mt-2 bg-green-600 text-white font-bold rounded-full px-6 py-3"
