@@ -10,7 +10,8 @@ import { FamilyList } from "./components/FamilyList";
 import { LoginScreen } from "./components/LoginScreen";
 import { CatchResultModal } from "./components/CatchResultModal";
 import { Leaderboard } from "./components/Leaderboard";
-import { scoreImageViaBackend, confirmCatch, getMyCollection } from "./services/supabaseApi";
+import { IssueReportModal } from "./components/IssueReportModal";
+import { scoreImageViaBackend, confirmCatch, getMyCollection, createGithubIssue } from "./services/supabaseApi";
 import type { VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
@@ -103,6 +104,7 @@ function AppContent() {
   const [serverFoundSpeciesIds, setServerFoundSpeciesIds] = useState<string[] | null>(null);
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [serverCollectionStats, setServerCollectionStats] = useState<ServerCollectionStats | null>(null);
+  const [showIssueModal, setShowIssueModal] = useState(false);
   const collectionLoading = serverFoundSpeciesIds === null && collectionError === null;
 
   useEffect(() => {
@@ -238,6 +240,14 @@ function AppContent() {
     setPending(null);
   }
 
+  async function handleCreateIssue(payload: { title: string; description: string; category: 'bug' | 'feature' | 'other'; page: string }) {
+    const result = await createGithubIssue(sessionToken!, {
+      ...payload,
+      appVersion: 'web',
+    });
+    return { issue_url: result.issue_url };
+  }
+
   return (
     <div className="flex flex-col min-h-svh">
       <ScoreHeader
@@ -295,36 +305,48 @@ function AppContent() {
         )}
       </main>
       {!pending && (
-        <nav className="flex border-t border-gray-200 bg-white shadow-inner">
-          <button
-            onClick={() => setTab("camera")}
-            className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "camera" ? "text-green-700" : "text-gray-400")}
-          >
-            <span className="text-2xl">📷</span>
-            Kamera
-          </button>
-          <button
-            onClick={() => setTab("collection")}
-            className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "collection" ? "text-green-700" : "text-gray-400")}
-          >
-            <span className="text-2xl">🦋</span>
-            Samling
-          </button>
-          <button
-            onClick={() => setTab("leaderboard")}
-            className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "leaderboard" ? "text-green-700" : "text-gray-400")}
-          >
-            <span className="text-2xl">🏆</span>
-            Toppliste
-          </button>
-          <button
-            onClick={logout}
-            className="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium text-gray-400"
-          >
-            <span className="text-2xl">🚪</span>
-            Logg ut
-          </button>
-        </nav>
+        <>
+          <div className="px-4 pb-2">
+            <button
+              type="button"
+              onClick={() => setShowIssueModal(true)}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+            >
+              🐞 Meld feil eller forslag
+            </button>
+          </div>
+
+          <nav className="flex border-t border-gray-200 bg-white shadow-inner">
+            <button
+              onClick={() => setTab("camera")}
+              className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "camera" ? "text-green-700" : "text-gray-400")}
+            >
+              <span className="text-2xl">📷</span>
+              Kamera
+            </button>
+            <button
+              onClick={() => setTab("collection")}
+              className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "collection" ? "text-green-700" : "text-gray-400")}
+            >
+              <span className="text-2xl">🦋</span>
+              Samling
+            </button>
+            <button
+              onClick={() => setTab("leaderboard")}
+              className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "leaderboard" ? "text-green-700" : "text-gray-400")}
+            >
+              <span className="text-2xl">🏆</span>
+              Toppliste
+            </button>
+            <button
+              onClick={logout}
+              className="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium text-gray-400"
+            >
+              <span className="text-2xl">🚪</span>
+              Logg ut
+            </button>
+          </nav>
+        </>
       )}
 
       {lastCatch && (
@@ -338,6 +360,14 @@ function AppContent() {
           isDailyBonus={lastCatch.isDailyBonus}
           bonusPoints={lastCatch.bonusPoints}
           onClose={() => setLastCatch(null)}
+        />
+      )}
+
+      {showIssueModal && (
+        <IssueReportModal
+          currentPage={tab}
+          onClose={() => setShowIssueModal(false)}
+          onSubmit={handleCreateIssue}
         />
       )}
     </div>

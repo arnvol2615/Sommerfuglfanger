@@ -251,3 +251,37 @@ export async function getMyCollection(sessionToken: string): Promise<MyCollectio
   if (!response.ok) throw new Error(data.error ?? 'Kunne ikke hente min samling');
   return data;
 }
+
+export interface CreateGithubIssuePayload {
+  title: string;
+  description: string;
+  category: 'bug' | 'feature' | 'other';
+  page?: string;
+  appVersion?: string;
+  honeypot?: string;
+}
+
+export interface CreateGithubIssueResponse {
+  ok: boolean;
+  issue_number: number;
+  issue_url: string;
+}
+
+export async function createGithubIssue(
+  sessionToken: string,
+  payload: CreateGithubIssuePayload
+): Promise<CreateGithubIssueResponse> {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/create-github-issue`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${sessionToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = (await response.json()) as CreateGithubIssueResponse & { error?: string };
+  if (!response.ok) throw new Error(data.error ?? 'Kunne ikke opprette issue');
+  return data;
+}

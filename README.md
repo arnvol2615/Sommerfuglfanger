@@ -101,6 +101,25 @@ Notes:
 - `VITE_SUPABASE_ANON_KEY` is expected to be public and must be protected by proper Supabase RLS/policies.
 - Keep server-side secrets (for example `INAT_API_TOKEN`) out of the frontend and store them in Supabase Function Secrets.
 
+## GitHub Issue Integration
+
+Users can submit bug reports and feature suggestions from inside the app.
+
+Required Supabase Edge Function secrets:
+
+- `GITHUB_TOKEN`: GitHub token with permission to create issues in the target repository
+- `GITHUB_REPO`: repository in `owner/repo` format
+- `GITHUB_ISSUE_LABELS` (optional): comma-separated default labels, e.g. `sommerfuglfanger,from-app`
+
+Required deployed function:
+
+- `create-github-issue`
+
+Security behavior:
+
+- Request requires valid app session token
+- Basic anti-spam rate limit (max 5 submissions per user per hour)
+
 ## AI Handoff Notes
 
 See `AGENTS.md` for repository-specific instructions for AI agents (constraints, done criteria, and safe-change checklist).
