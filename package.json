@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "extract:adb-status": "node scripts/extract-adb-statuses.mjs",
+    "sync:adb-species": "node scripts/sync-species-from-adb.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.3",

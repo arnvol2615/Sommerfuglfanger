@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { FAMILIES, SPECIES, type Family, type Rarity } from '../data/butterflies';
 import type { GameState } from '../hooks/useGameState';
 
+function getArtsdatabankenUrl(adbTaxonId: number): string {
+  return `https://artsdatabanken.no/arter/takson/${adbTaxonId}`;
+}
+
+function getInatUrl(inatTaxonId: number): string {
+  return `https://www.inaturalist.org/taxa/${inatTaxonId}`;
+}
+
 function rarityBadgeClasses(rarity: Rarity): string {
   switch (rarity) {
     case 'Svaert sjelden':
@@ -102,6 +110,25 @@ export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, api
                           <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${rarityBadgeClasses(species.rarity)}`}>
                             {rarityBadgeText(species.rarity)}
                           </span>
+                        </div>
+                        <div className="mt-1 text-xs flex gap-2">
+                          <a
+                            href={getArtsdatabankenUrl(species.adbTaxonId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            Artsdatabanken
+                          </a>
+                          <span className="text-gray-300">•</span>
+                          <a
+                            href={getInatUrl(species.inatTaxonId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            iNaturalist
+                          </a>
                         </div>
                       </div>
                       {found ? (
