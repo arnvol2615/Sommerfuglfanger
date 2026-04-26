@@ -1,0 +1,1023 @@
+{
+  "source": "https://artsdatabanken.no/tree-of-life/subspecies/872980",
+  "createdAt": "2026-04-26T15:21:25.501Z",
+  "totalSpeciesInSource": 110,
+  "categoryDistribution": {
+    "LC": 82,
+    "EN": 5,
+    "NT": 4,
+    "NA": 6,
+    "MISSING": 6,
+    "CR": 4,
+    "NR": 1,
+    "NK": 1,
+    "VU": 1
+  },
+  "missingCategoryCount": 6,
+  "allowed": [
+    "LC",
+    "VU",
+    "EN",
+    "CR",
+    "NT",
+    "NA",
+    "NE",
+    "DD",
+    "RE",
+    "NK",
+    "NR"
+  ],
+  "filteredCount": 104,
+  "count": 104,
+  "identifyCoverage": {
+    "identifyFile": "C:\\Code\\Privat\\Sommerfuglfanger\\Sommerfuglfanger\\supabase-functions-updated\\identify.ts",
+    "parsedIdentifyRows": 80,
+    "requiredFieldsForIdentify": [
+      "id",
+      "name_no",
+      "name_sci",
+      "family",
+      "inatTaxonId",
+      "adbTaxonId",
+      "redlistCategory",
+      "rarity"
+    ],
+    "availableFromAdbSource": [
+      "name_no",
+      "name_sci",
+      "adbTaxonId",
+      "redlistCategory"
+    ],
+    "derivableFromAdbSource": [
+      "id (from name_sci slug)",
+      "rarity (from redlistCategory)"
+    ],
+    "notAvailableFromAdbSource": [
+      "family",
+      "inatTaxonId"
+    ],
+    "missingInAdbCount": 7,
+    "missingInAdb": [
+      "Nymphalis c-album",
+      "Everes argiades",
+      "Agriades glandon",
+      "Pieris dulcinea",
+      "Colias nastes",
+      "Iphiclides podalirius",
+      "Thymelicus sylvestris"
+    ],
+    "adbTaxonMismatchesCount": 0,
+    "adbTaxonMismatches": [],
+    "categoryMismatchesCount": 2,
+    "categoryMismatches": [
+      {
+        "name_sci": "Nymphalis polychloros",
+        "identifyCategory": "LC",
+        "sourceCategory": "NA"
+      },
+      {
+        "name_sci": "Argynnis niobe",
+        "identifyCategory": "LC",
+        "sourceCategory": "CR"
+      }
+    ]
+  },
+  "species": [
+    {
+      "id": "46511",
+      "adbTaxonId": 29734,
+      "name_no": "tiriltungesmyger",
+      "name_sci": "Erynnis tages",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "erynnis-tages"
+    },
+    {
+      "id": "46513",
+      "adbTaxonId": 29736,
+      "name_no": "polarsmyger",
+      "name_sci": "Pyrgus andromedae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pyrgus-andromedae"
+    },
+    {
+      "id": "46514",
+      "adbTaxonId": 29737,
+      "name_no": "moltesmyger",
+      "name_sci": "Pyrgus centaureae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pyrgus-centaureae"
+    },
+    {
+      "id": "46515",
+      "adbTaxonId": 29738,
+      "name_no": "bakkesmyger",
+      "name_sci": "Pyrgus malvae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pyrgus-malvae"
+    },
+    {
+      "id": "46516",
+      "adbTaxonId": 29739,
+      "name_no": "alvesmyger",
+      "name_sci": "Pyrgus alveus",
+      "category": "EN",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "pyrgus-alveus"
+    },
+    {
+      "id": "46519",
+      "adbTaxonId": 29742,
+      "name_no": "gulflekksmyger",
+      "name_sci": "Carterocephalus palaemon",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "carterocephalus-palaemon"
+    },
+    {
+      "id": "46520",
+      "adbTaxonId": 29743,
+      "name_no": "svartflekksmyger",
+      "name_sci": "Carterocephalus silvicola",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "carterocephalus-silvicola"
+    },
+    {
+      "id": "46523",
+      "adbTaxonId": 29746,
+      "name_no": "timoteismyger",
+      "name_sci": "Thymelicus lineola",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "thymelicus-lineola"
+    },
+    {
+      "id": "46525",
+      "adbTaxonId": 29748,
+      "name_no": "kommasmyger",
+      "name_sci": "Hesperia comma",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "hesperia-comma"
+    },
+    {
+      "id": "46527",
+      "adbTaxonId": 29750,
+      "name_no": "engsmyger",
+      "name_sci": "Ochlodes sylvanus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "ochlodes-sylvanus"
+    },
+    {
+      "id": "46532",
+      "adbTaxonId": 29755,
+      "name_no": "apollosommerfugl",
+      "name_sci": "Parnassius apollo",
+      "category": "NT",
+      "rarity": "Sjelden",
+      "derivedSlugId": "parnassius-apollo"
+    },
+    {
+      "id": "46533",
+      "adbTaxonId": 29756,
+      "name_no": "mnemosynesommerfugl",
+      "name_sci": "Parnassius mnemosyne",
+      "category": "NT",
+      "rarity": "Sjelden",
+      "derivedSlugId": "parnassius-mnemosyne"
+    },
+    {
+      "id": "46536",
+      "adbTaxonId": 29759,
+      "name_no": "svalestjert",
+      "name_sci": "Papilio machaon",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "papilio-machaon"
+    },
+    {
+      "id": "46540",
+      "adbTaxonId": 29763,
+      "name_no": "skoghvitvinge",
+      "name_sci": "Leptidea sinapis",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "leptidea-sinapis"
+    },
+    {
+      "id": "127734",
+      "adbTaxonId": 84562,
+      "name_no": "enghvitvinge",
+      "name_sci": "Leptidea juvernica",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "leptidea-juvernica"
+    },
+    {
+      "id": "46544",
+      "adbTaxonId": 29767,
+      "name_no": "aurorasommerfugl",
+      "name_sci": "Anthocharis cardamines",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "anthocharis-cardamines"
+    },
+    {
+      "id": "46546",
+      "adbTaxonId": 29769,
+      "name_no": "hagtornsommerfugl",
+      "name_sci": "Aporia crataegi",
+      "category": "EN",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "aporia-crataegi"
+    },
+    {
+      "id": "46548",
+      "adbTaxonId": 29771,
+      "name_no": "stor kålsommerfugl",
+      "name_sci": "Pieris brassicae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pieris-brassicae"
+    },
+    {
+      "id": "46549",
+      "adbTaxonId": 29772,
+      "name_no": "liten kålsommerfugl",
+      "name_sci": "Pieris rapae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pieris-rapae"
+    },
+    {
+      "id": "46550",
+      "adbTaxonId": 29773,
+      "name_no": "rapssommerfugl",
+      "name_sci": "Pieris napi",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pieris-napi"
+    },
+    {
+      "id": "134016",
+      "adbTaxonId": 91453,
+      "name_no": "vandrehvitvinge",
+      "name_sci": "Pontia edusa",
+      "category": "NA",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "pontia-edusa"
+    },
+    {
+      "id": "46555",
+      "adbTaxonId": 29778,
+      "name_no": "mjeltgulvinge",
+      "name_sci": "Colias hecla",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "colias-hecla"
+    },
+    {
+      "id": "46557",
+      "adbTaxonId": 29780,
+      "name_no": "myrgulvinge",
+      "name_sci": "Colias palaeno",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "colias-palaeno"
+    },
+    {
+      "id": "46558",
+      "adbTaxonId": 29781,
+      "name_no": "vandregulvinge",
+      "name_sci": "Colias croceus",
+      "category": "NA",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "colias-croceus"
+    },
+    {
+      "id": "170251",
+      "adbTaxonId": 141099,
+      "name_no": "polargulvinge",
+      "name_sci": "Colias tyche",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "colias-tyche"
+    },
+    {
+      "id": "46560",
+      "adbTaxonId": 29783,
+      "name_no": "sitronsommerfugl",
+      "name_sci": "Gonepteryx rhamni",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "gonepteryx-rhamni"
+    },
+    {
+      "id": "46589",
+      "adbTaxonId": 29812,
+      "name_no": "ildgullvinge",
+      "name_sci": "Lycaena phlaeas",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "lycaena-phlaeas"
+    },
+    {
+      "id": "46590",
+      "adbTaxonId": 29813,
+      "name_no": "fiolett gullvinge",
+      "name_sci": "Lycaena helle",
+      "category": "EN",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "lycaena-helle"
+    },
+    {
+      "id": "46591",
+      "adbTaxonId": 29814,
+      "name_no": "oransjegullvinge",
+      "name_sci": "Lycaena virgaureae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "lycaena-virgaureae"
+    },
+    {
+      "id": "46592",
+      "adbTaxonId": 29815,
+      "name_no": "purpurgullvinge",
+      "name_sci": "Lycaena hippothoe",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "lycaena-hippothoe"
+    },
+    {
+      "id": "46564",
+      "adbTaxonId": 29787,
+      "name_no": "dvergblåvinge",
+      "name_sci": "Cupido minimus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "cupido-minimus"
+    },
+    {
+      "id": "46566",
+      "adbTaxonId": 29789,
+      "name_no": "vårblåvinge",
+      "name_sci": "Celastrina argiolus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "celastrina-argiolus"
+    },
+    {
+      "id": "46568",
+      "adbTaxonId": 29791,
+      "name_no": "klippeblåvinge",
+      "name_sci": "Scolitantides orion",
+      "category": "CR",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "scolitantides-orion"
+    },
+    {
+      "id": "46570",
+      "adbTaxonId": 29793,
+      "name_no": "kløverblåvinge",
+      "name_sci": "Glaucopsyche alexis",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "glaucopsyche-alexis"
+    },
+    {
+      "id": "46573",
+      "adbTaxonId": 29796,
+      "name_no": "sankthansblåvinge",
+      "name_sci": "Aricia artaxerxes",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "aricia-artaxerxes"
+    },
+    {
+      "id": "46574",
+      "adbTaxonId": 29797,
+      "name_no": "kileblåvinge",
+      "name_sci": "Aricia nicias",
+      "category": "EN",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "aricia-nicias"
+    },
+    {
+      "id": "46576",
+      "adbTaxonId": 29799,
+      "name_no": "argusblåvinge",
+      "name_sci": "Plebejus argus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "plebejus-argus"
+    },
+    {
+      "id": "46577",
+      "adbTaxonId": 29800,
+      "name_no": "idasblåvinge",
+      "name_sci": "Plebejus idas",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "plebejus-idas"
+    },
+    {
+      "id": "46578",
+      "adbTaxonId": 29801,
+      "name_no": "lakrismjeltblåvinge",
+      "name_sci": "Plebejus argyrognomon",
+      "category": "CR",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "plebejus-argyrognomon"
+    },
+    {
+      "id": "46580",
+      "adbTaxonId": 89985,
+      "name_no": "polarblåvinge",
+      "name_sci": "Agriades aquilo",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "agriades-aquilo"
+    },
+    {
+      "id": "132259",
+      "adbTaxonId": 29805,
+      "name_no": "myrblåvinge",
+      "name_sci": "Agriades optilete",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "agriades-optilete"
+    },
+    {
+      "id": "132260",
+      "adbTaxonId": 84548,
+      "name_no": "fjellblåvinge",
+      "name_sci": "Agriades orbitulus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "agriades-orbitulus"
+    },
+    {
+      "id": "46586",
+      "adbTaxonId": 29809,
+      "name_no": "sølvblåvinge",
+      "name_sci": "Polyommatus amandus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "polyommatus-amandus"
+    },
+    {
+      "id": "46587",
+      "adbTaxonId": 29810,
+      "name_no": "tiriltungeblåvinge",
+      "name_sci": "Polyommatus icarus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "polyommatus-icarus"
+    },
+    {
+      "id": "127721",
+      "adbTaxonId": 29808,
+      "name_no": "engblåvinge",
+      "name_sci": "Cyaniris semiargus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "cyaniris-semiargus"
+    },
+    {
+      "id": "132257",
+      "adbTaxonId": 29795,
+      "name_no": "brun blåvinge",
+      "name_sci": "Eumedonia eumedon",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "eumedonia-eumedon"
+    },
+    {
+      "id": "216073",
+      "adbTaxonId": 204536,
+      "name_no": "",
+      "name_sci": "Cacyreus marshalli",
+      "category": "NR",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "cacyreus-marshalli"
+    },
+    {
+      "id": "216085",
+      "adbTaxonId": 204548,
+      "name_no": "",
+      "name_sci": "Lampides boeticus",
+      "category": "NK",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "lampides-boeticus"
+    },
+    {
+      "id": "46594",
+      "adbTaxonId": 29817,
+      "name_no": "grønnstjertvinge",
+      "name_sci": "Callophrys rubi",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "callophrys-rubi"
+    },
+    {
+      "id": "46596",
+      "adbTaxonId": 29819,
+      "name_no": "almestjertvinge",
+      "name_sci": "Satyrium w-album",
+      "category": "NT",
+      "rarity": "Sjelden",
+      "derivedSlugId": "satyrium-w-album"
+    },
+    {
+      "id": "46598",
+      "adbTaxonId": 29821,
+      "name_no": "slåpetornstjertvinge",
+      "name_sci": "Thecla betulae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "thecla-betulae"
+    },
+    {
+      "id": "46600",
+      "adbTaxonId": 29823,
+      "name_no": "eikestjertvinge",
+      "name_sci": "Favonius quercus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "favonius-quercus"
+    },
+    {
+      "id": "46604",
+      "adbTaxonId": 29827,
+      "name_no": "ringperlemorvinge",
+      "name_sci": "Boloria eunomia",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-eunomia"
+    },
+    {
+      "id": "46605",
+      "adbTaxonId": 29828,
+      "name_no": "rødflekket perlemorvinge",
+      "name_sci": "Boloria euphrosyne",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-euphrosyne"
+    },
+    {
+      "id": "46606",
+      "adbTaxonId": 29829,
+      "name_no": "brunflekket perlemorvinge",
+      "name_sci": "Boloria selene",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-selene"
+    },
+    {
+      "id": "46607",
+      "adbTaxonId": 29830,
+      "name_no": "arktisk perlemorvinge",
+      "name_sci": "Boloria chariclea",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-chariclea"
+    },
+    {
+      "id": "46608",
+      "adbTaxonId": 29831,
+      "name_no": "frøyas perlemorvinge",
+      "name_sci": "Boloria freija",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-freija"
+    },
+    {
+      "id": "46609",
+      "adbTaxonId": 29832,
+      "name_no": "polarperlemorvinge",
+      "name_sci": "Boloria polaris",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-polaris"
+    },
+    {
+      "id": "46610",
+      "adbTaxonId": 29833,
+      "name_no": "tors perlemorvinge",
+      "name_sci": "Boloria thore",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-thore"
+    },
+    {
+      "id": "46611",
+      "adbTaxonId": 29834,
+      "name_no": "friggs perlemorvinge",
+      "name_sci": "Boloria frigga",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-frigga"
+    },
+    {
+      "id": "46612",
+      "adbTaxonId": 29835,
+      "name_no": "dvergperlemorvinge",
+      "name_sci": "Boloria improba",
+      "category": "NT",
+      "rarity": "Sjelden",
+      "derivedSlugId": "boloria-improba"
+    },
+    {
+      "id": "46613",
+      "adbTaxonId": 29836,
+      "name_no": "fjellperlemorvinge",
+      "name_sci": "Boloria napaea",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-napaea"
+    },
+    {
+      "id": "46614",
+      "adbTaxonId": 29837,
+      "name_no": "myrperlemorvinge",
+      "name_sci": "Boloria aquilonaris",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "boloria-aquilonaris"
+    },
+    {
+      "id": "46616",
+      "adbTaxonId": 29839,
+      "name_no": "sølvkåpe",
+      "name_sci": "Issoria lathonia",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "issoria-lathonia"
+    },
+    {
+      "id": "46618",
+      "adbTaxonId": 29841,
+      "name_no": "engperlemorvinge",
+      "name_sci": "Brenthis ino",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "brenthis-ino"
+    },
+    {
+      "id": "46620",
+      "adbTaxonId": 29843,
+      "name_no": "keiserkåpe",
+      "name_sci": "Argynnis paphia",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "argynnis-paphia"
+    },
+    {
+      "id": "46621",
+      "adbTaxonId": 219370,
+      "name_no": "aglajaperlemorvinge",
+      "name_sci": "Argynnis aglaja",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "argynnis-aglaja"
+    },
+    {
+      "id": "46622",
+      "adbTaxonId": 219373,
+      "name_no": "adippeperlemorvinge",
+      "name_sci": "Argynnis adippe",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "argynnis-adippe"
+    },
+    {
+      "id": "46623",
+      "adbTaxonId": 219376,
+      "name_no": "niobeperlemorvinge",
+      "name_sci": "Argynnis niobe",
+      "category": "CR",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "argynnis-niobe"
+    },
+    {
+      "id": "46626",
+      "adbTaxonId": 29849,
+      "name_no": "admiral",
+      "name_sci": "Vanessa atalanta",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "vanessa-atalanta"
+    },
+    {
+      "id": "46627",
+      "adbTaxonId": 29850,
+      "name_no": "tistelsommerfugl",
+      "name_sci": "Vanessa cardui",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "vanessa-cardui"
+    },
+    {
+      "id": "46630",
+      "adbTaxonId": 29853,
+      "name_no": "sørgekåpe",
+      "name_sci": "Nymphalis antiopa",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "nymphalis-antiopa"
+    },
+    {
+      "id": "46632",
+      "adbTaxonId": 29855,
+      "name_no": "kirsebærsommerfugl",
+      "name_sci": "Nymphalis polychloros",
+      "category": "NA",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "nymphalis-polychloros"
+    },
+    {
+      "id": "138632",
+      "adbTaxonId": 96865,
+      "name_no": "seljesommerfugl",
+      "name_sci": "Nymphalis xanthomelas",
+      "category": "NA",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "nymphalis-xanthomelas"
+    },
+    {
+      "id": "46635",
+      "adbTaxonId": 29858,
+      "name_no": "iduns rutevinge",
+      "name_sci": "Euphydryas iduna",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "euphydryas-iduna"
+    },
+    {
+      "id": "46637",
+      "adbTaxonId": 29860,
+      "name_no": "prikkrutevinge",
+      "name_sci": "Melitaea cinxia",
+      "category": "CR",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "melitaea-cinxia"
+    },
+    {
+      "id": "46638",
+      "adbTaxonId": 29861,
+      "name_no": "mørk rutevinge",
+      "name_sci": "Melitaea diamina",
+      "category": "VU",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "melitaea-diamina"
+    },
+    {
+      "id": "46639",
+      "adbTaxonId": 29862,
+      "name_no": "marimjellerutevinge",
+      "name_sci": "Melitaea athalia",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "melitaea-athalia"
+    },
+    {
+      "id": "127723",
+      "adbTaxonId": 29854,
+      "name_no": "neslesommerfugl",
+      "name_sci": "Aglais urticae",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "aglais-urticae"
+    },
+    {
+      "id": "127724",
+      "adbTaxonId": 29852,
+      "name_no": "dagpåfugløye",
+      "name_sci": "Aglais io",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "aglais-io"
+    },
+    {
+      "id": "127722",
+      "adbTaxonId": 29856,
+      "name_no": "hvit c",
+      "name_sci": "Polygonia c-album",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "polygonia-c-album"
+    },
+    {
+      "id": "137344",
+      "adbTaxonId": 95249,
+      "name_no": "kartvinge",
+      "name_sci": "Araschnia levana",
+      "category": "NA",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "araschnia-levana"
+    },
+    {
+      "id": "46642",
+      "adbTaxonId": 29865,
+      "name_no": "ospesommerfugl",
+      "name_sci": "Limenitis populi",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "limenitis-populi"
+    },
+    {
+      "id": "46645",
+      "adbTaxonId": 29868,
+      "name_no": "skogringvinge",
+      "name_sci": "Pararge aegeria",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "pararge-aegeria"
+    },
+    {
+      "id": "46647",
+      "adbTaxonId": 29870,
+      "name_no": "sørringvinge",
+      "name_sci": "Lasiommata megera",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "lasiommata-megera"
+    },
+    {
+      "id": "46648",
+      "adbTaxonId": 29871,
+      "name_no": "bergringvinge",
+      "name_sci": "Lasiommata petropolitana",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "lasiommata-petropolitana"
+    },
+    {
+      "id": "46649",
+      "adbTaxonId": 29872,
+      "name_no": "klipperingvinge",
+      "name_sci": "Lasiommata maera",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "lasiommata-maera"
+    },
+    {
+      "id": "46651",
+      "adbTaxonId": 29874,
+      "name_no": "myrringvinge",
+      "name_sci": "Coenonympha tullia",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "coenonympha-tullia"
+    },
+    {
+      "id": "46652",
+      "adbTaxonId": 29875,
+      "name_no": "perleringvinge",
+      "name_sci": "Coenonympha arcania",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "coenonympha-arcania"
+    },
+    {
+      "id": "46653",
+      "adbTaxonId": 29876,
+      "name_no": "heroringvinge",
+      "name_sci": "Coenonympha hero",
+      "category": "EN",
+      "rarity": "Svaert sjelden",
+      "derivedSlugId": "coenonympha-hero"
+    },
+    {
+      "id": "46654",
+      "adbTaxonId": 29877,
+      "name_no": "engringvinge",
+      "name_sci": "Coenonympha pamphilus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "coenonympha-pamphilus"
+    },
+    {
+      "id": "46656",
+      "adbTaxonId": 29879,
+      "name_no": "gullringvinge",
+      "name_sci": "Aphantopus hyperantus",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "aphantopus-hyperantus"
+    },
+    {
+      "id": "46658",
+      "adbTaxonId": 29881,
+      "name_no": "rappringvinge",
+      "name_sci": "Maniola jurtina",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "maniola-jurtina"
+    },
+    {
+      "id": "46660",
+      "adbTaxonId": 29883,
+      "name_no": "fløyelsringvinge",
+      "name_sci": "Erebia ligea",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "erebia-ligea"
+    },
+    {
+      "id": "46661",
+      "adbTaxonId": 29884,
+      "name_no": "emblaringvinge",
+      "name_sci": "Erebia embla",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "erebia-embla"
+    },
+    {
+      "id": "46662",
+      "adbTaxonId": 29885,
+      "name_no": "disaringvinge",
+      "name_sci": "Erebia disa",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "erebia-disa"
+    },
+    {
+      "id": "46664",
+      "adbTaxonId": 29887,
+      "name_no": "fjellringvinge",
+      "name_sci": "Erebia pandrose",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "erebia-pandrose"
+    },
+    {
+      "id": "170252",
+      "adbTaxonId": 141101,
+      "name_no": "polarringvinge",
+      "name_sci": "Erebia medusa",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "erebia-medusa"
+    },
+    {
+      "id": "46667",
+      "adbTaxonId": 29890,
+      "name_no": "kystringvinge",
+      "name_sci": "Hipparchia semele",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "hipparchia-semele"
+    },
+    {
+      "id": "170253",
+      "adbTaxonId": 225997,
+      "name_no": "svabergringvinge",
+      "name_sci": "Hipparchia alcyone",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "hipparchia-alcyone"
+    },
+    {
+      "id": "46669",
+      "adbTaxonId": 29892,
+      "name_no": "nornens ringvinge",
+      "name_sci": "Oeneis norna",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "oeneis-norna"
+    },
+    {
+      "id": "46670",
+      "adbTaxonId": 29893,
+      "name_no": "tundraringvinge",
+      "name_sci": "Oeneis bore",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "oeneis-bore"
+    },
+    {
+      "id": "46671",
+      "adbTaxonId": 29894,
+      "name_no": "juttas ringvinge",
+      "name_sci": "Oeneis jutta",
+      "category": "LC",
+      "rarity": "Vanlig",
+      "derivedSlugId": "oeneis-jutta"
+    },
+    {
+      "id": "137341",
+      "adbTaxonId": 95246,
+      "name_no": "stor purpurkåpe",
+      "name_sci": "Apatura iris",
+      "category": "NA",
+      "rarity": "Uvanlig",
+      "derivedSlugId": "apatura-iris"
+    }
+  ]
+}
