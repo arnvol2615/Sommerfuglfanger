@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { VisionResult } from '../services/inatVision';
+import type { RawTopResult } from '../services/supabaseApi';
 import type { Rarity, Species } from '../data/butterflies';
 
 function rarityBadgeClasses(rarity: Rarity): string {
@@ -46,6 +47,7 @@ function rarityMultiplier(rarity: Rarity): number {
 
 interface IdentificationResultProps {
   results: VisionResult[];
+  rawTop: RawTopResult[];
   previewUrl: string;
   onConfirm: (species: Species, visionResult?: VisionResult) => void;
   onDismiss: () => void;
@@ -55,6 +57,7 @@ interface IdentificationResultProps {
 
 export function IdentificationResult({
   results,
+  rawTop,
   previewUrl,
   onConfirm,
   onDismiss,
@@ -110,10 +113,26 @@ export function IdentificationResult({
   }
 
   if (results.length === 0) {
+    const bestHit = rawTop[0];
     return (
       <div className="flex flex-col items-center gap-4 p-6 text-center">
         <img src={previewUrl} alt="Bilde" className="w-48 h-48 rounded-2xl object-cover" />
         <p className="text-gray-700 font-medium">Ingen norsk dagsommerfugl funnet i bildet.</p>
+        {bestHit && (
+          <div className="w-full max-w-xs rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-left">
+            <p className="text-gray-500 mb-1">iNaturalist gjenkjente:</p>
+            <p className="font-semibold text-gray-800 italic">{bestHit.name}</p>
+            <p className="text-gray-500">{Math.round(bestHit.score)}% sikkerhet</p>
+            <a
+              href={`https://www.inaturalist.org/taxa/${bestHit.taxon_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-green-700 underline text-sm"
+            >
+              Se mer på iNaturalist →
+            </a>
+          </div>
+        )}
         <p className="text-sm text-gray-500">Prøv å ta et nærmere bilde, helst mot en lys bakgrunn.</p>
         <button
           onClick={onDismiss}

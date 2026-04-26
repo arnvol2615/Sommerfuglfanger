@@ -11,7 +11,7 @@ import { LoginScreen } from "./components/LoginScreen";
 import { CatchResultModal } from "./components/CatchResultModal";
 import { Leaderboard } from "./components/Leaderboard";
 import { IssueReportModal } from "./components/IssueReportModal";
-import { scoreImageViaBackend, confirmCatch, getMyCollection, createGithubIssue } from "./services/supabaseApi";
+import { scoreImageViaBackend, confirmCatch, getMyCollection, createGithubIssue, type RawTopResult } from "./services/supabaseApi";
 import type { VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
@@ -21,6 +21,7 @@ interface PendingIdentification {
   file: File;
   previewUrl: string;
   results: VisionResult[];
+  rawTop: RawTopResult[];
   isLoading: boolean;
   error: string | null;
 }
@@ -150,11 +151,11 @@ function AppContent() {
   }
 
   async function handleCapture(file: File, previewUrl: string) {
-    setPending({ file, previewUrl, results: [], isLoading: true, error: null });
+    setPending({ file, previewUrl, results: [], rawTop: [], isLoading: true, error: null });
     try {
       const response = await scoreImageViaBackend(sessionToken!, file);
       setPending(prev =>
-        prev ? { ...prev, results: response.results, isLoading: false } : null
+        prev ? { ...prev, results: response.results, rawTop: response.rawTop ?? [], isLoading: false } : null
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Noe gikk galt ved gjenkjenning.";
@@ -261,6 +262,7 @@ function AppContent() {
         {pending ? (
           <IdentificationResult
             results={pending.results}
+            rawTop={pending.rawTop}
             previewUrl={pending.previewUrl}
             onConfirm={handleConfirm}
             onDismiss={handleDismiss}

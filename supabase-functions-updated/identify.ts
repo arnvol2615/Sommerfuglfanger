@@ -248,13 +248,20 @@ Deno.serve(async (req) => {
     if (results.length >= 3) break;
   }
 
+  const rawTop = inatData.results.slice(0, 3).map(r => ({
+    taxon_id: r.taxon.id,
+    name: r.taxon.name,
+    score: r.combined_score,
+  }));
+
   // If no match found
   if (results.length === 0) {
     return new Response(
       JSON.stringify({ 
         accepted: false, 
         reason: "Ingen gjenkjennbar sommerfugl",
-        results: []
+        results: [],
+        rawTop,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -264,6 +271,7 @@ Deno.serve(async (req) => {
   return new Response(
     JSON.stringify({
       accepted: true,
+      rawTop,
       results: results.map(r => ({
         species: r.species,
         score: r.score,

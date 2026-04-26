@@ -81,10 +81,17 @@ export async function resetPassword(token: string, newPassword: string): Promise
 
 import type { VisionResult } from './inatVision';
 
+export interface RawTopResult {
+  taxon_id: number;
+  name: string;
+  score: number;
+}
+
 export interface ScoreImageResponse {
   accepted: boolean;
   reason?: string;
   results: VisionResult[];
+  rawTop?: RawTopResult[];
 }
 
 export async function scoreImageViaBackend(
