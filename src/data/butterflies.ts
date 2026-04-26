@@ -1,4 +1,4 @@
-﻿export type Family =
+export type Family =
   | 'Nymfevinger'
   | 'Glansvinger'
   | 'Hvitvinger'
@@ -27,106 +27,19 @@ export const FAMILIES: { id: Family; name: string; icon: string }[] = [
   { id: 'Smygere', name: 'Smygere (Hesperiidae)', icon: '⚡' },
 ];
 
-const REDLIST_CATEGORY_BY_SCI_NAME: Record<string, RedListCategory> = {
-  'aglais io': 'LC',
-  'aglais urticae': 'LC',
-  'agriades aquilo': 'LC',
-  'agriades glandon': 'LC',
-  'anthocharis cardamines': 'LC',
-  'apatura iris': 'LC',
-  'aphantopus hyperantus': 'LC',
-  'araschnia levana': 'LC',
-  'argynnis paphia': 'LC',
-  'aricia artaxerxes': 'LC',
-  'boloria aquilonaris': 'LC',
-  'boloria euphrosyne': 'LC',
-  'boloria freija': 'LC',
-  'boloria frigga': 'LC',
+const REDLIST_OVERRIDES: Record<string, RedListCategory> = {
   'boloria improba': 'NT',
-  'boloria selene': 'LC',
-  'boloria eunomia': 'LC',
-  'boloria chariclea': 'LC',
-  'boloria polaris': 'LC',
-  'boloria thore': 'LC',
-  'boloria napaea': 'LC',
-  'brenthis ino': 'LC',
-  'callophrys rubi': 'LC',
-  'carterocephalus palaemon': 'LC',
-  'celastrina argiolus': 'LC',
-  'coenonympha pamphilus': 'LC',
-  'coenonympha tullia': 'LC',
-  'coenonympha arcania': 'LC',
   'coenonympha hero': 'EN',
-  'colias hecla': 'LC',
-  'colias nastes': 'LC',
-  'colias palaeno': 'LC',
-  'cupido minimus': 'LC',
-  'erebia disa': 'LC',
-  'erebia embla': 'LC',
-  'erebia medusa': 'LC',
-  'erebia pandrose': 'LC',
-  'erebia ligea': 'LC',
-  'erynnis tages': 'LC',
-  'glaucopsyche alexis': 'LC',
-  'scolitantides orion': 'CR',
-  'euphydryas iduna': 'LC',
-  'favonius quercus': 'LC',
-  'gonepteryx rhamni': 'LC',
-  'hesperia comma': 'LC',
-  'hipparchia alcyone': 'LC',
-  'hipparchia semele': 'LC',
-  'lasiommata maera': 'LC',
-  'lasiommata megera': 'LC',
-  'lasiommata petropolitana': 'LC',
-  'leptidea juvernica': 'LC',
-  'leptidea sinapis': 'LC',
-  'limenitis populi': 'LC',
-  'lycaena hippothoe': 'LC',
-  'lycaena phlaeas': 'LC',
   'lycaena helle': 'EN',
-  'lycaena virgaureae': 'LC',
-  'maniola jurtina': 'LC',
-  'melitaea athalia': 'LC',
   'melitaea cinxia': 'CR',
   'melitaea diamina': 'VU',
-  'nymphalis antiopa': 'LC',
-  'nymphalis c-album': 'LC',
-  'nymphalis polychloros': 'LC',
-  'ochlodes sylvanus': 'LC',
-  'oeneis bore': 'LC',
-  'oeneis jutta': 'LC',
-  'oeneis norna': 'LC',
-  'papilio machaon': 'LC',
-  'pararge aegeria': 'LC',
   'parnassius apollo': 'NT',
   'parnassius mnemosyne': 'NT',
-  'pieris brassicae': 'LC',
-  'pieris napi': 'LC',
-  'pieris rapae': 'LC',
-  'plebejus argus': 'LC',
-  'plebejus idas': 'LC',
-  'polygonia c-album': 'LC',
-  'polyommatus icarus': 'LC',
-  'polyommatus amandus': 'LC',
-  'cyaniris semiargus': 'LC',
-  'eumedonia eumedon': 'LC',
+  'scolitantides orion': 'CR',
   'plebejus argyrognomon': 'CR',
   'aricia nicias': 'EN',
-  'pontia edusa': 'LC',
-  'pyrgus centaureae': 'LC',
-  'pyrgus malvae': 'LC',
-  'pyrgus andromedae': 'LC',
   'pyrgus alveus': 'EN',
-  'carterocephalus silvicola': 'LC',
   'aporia crataegi': 'EN',
-  'colias tyche': 'LC',
-  'issoria lathonia': 'LC',
-  'agriades optilete': 'LC',
-  'agriades orbitulus': 'LC',
-  'thecla betulae': 'LC',
-  'thymelicus lineola': 'LC',
-  'vanessa atalanta': 'LC',
-  'vanessa cardui': 'LC',
 };
 
 function toRarity(category: RedListCategory): Rarity {
@@ -137,7 +50,6 @@ function toRarity(category: RedListCategory): Rarity {
 }
 
 const BASE_SPECIES: Omit<Species, 'redlistCategory' | 'rarity'>[] = [
-  // Nymfevinger / Nymphalidae
   { id: 'aglais-urticae', name_no: 'Neslesommerfugl', name_sci: 'Aglais urticae', family: 'Nymfevinger', inatTaxonId: 54468, adbTaxonId: 29854 },
   { id: 'aglais-io', name_no: 'Dagpåfugløye', name_sci: 'Aglais io', family: 'Nymfevinger', inatTaxonId: 207977, adbTaxonId: 29852 },
   { id: 'vanessa-atalanta', name_no: 'Admiral', name_sci: 'Vanessa atalanta', family: 'Nymfevinger', inatTaxonId: 49133, adbTaxonId: 29849 },
@@ -190,8 +102,6 @@ const BASE_SPECIES: Omit<Species, 'redlistCategory' | 'rarity'>[] = [
   { id: 'erebia-medusa', name_no: 'Polarringvinge', name_sci: 'Erebia medusa', family: 'Nymfevinger', inatTaxonId: 333774, adbTaxonId: 141101 },
   { id: 'hipparchia-semele', name_no: 'Kystringvinge', name_sci: 'Hipparchia semele', family: 'Nymfevinger', inatTaxonId: 102800, adbTaxonId: 29890 },
   { id: 'hipparchia-alcyone', name_no: 'Svabergringvinge', name_sci: 'Hipparchia alcyone', family: 'Nymfevinger', inatTaxonId: 362064, adbTaxonId: 225997 },
-
-  // Glansvinger / Lycaenidae
   { id: 'lycaena-phlaeas', name_no: 'Ildgullvinge', name_sci: 'Lycaena phlaeas', family: 'Glansvinger', inatTaxonId: 55655, adbTaxonId: 29812 },
   { id: 'lycaena-hippothoe', name_no: 'Purpurgullvinge', name_sci: 'Lycaena hippothoe', family: 'Glansvinger', inatTaxonId: 62380, adbTaxonId: 29815 },
   { id: 'lycaena-virgaureae', name_no: 'Oransjegullvinge', name_sci: 'Lycaena virgaureae', family: 'Glansvinger', inatTaxonId: 147078, adbTaxonId: 29814 },
@@ -217,8 +127,6 @@ const BASE_SPECIES: Omit<Species, 'redlistCategory' | 'rarity'>[] = [
   { id: 'polyommatus-amandus', name_no: 'Sølvblåvinge', name_sci: 'Polyommatus amandus', family: 'Glansvinger', inatTaxonId: 362078, adbTaxonId: 29809 },
   { id: 'eumedonia-eumedon', name_no: 'Brun blåvinge', name_sci: 'Eumedonia eumedon', family: 'Glansvinger', inatTaxonId: 548481, adbTaxonId: 29795 },
   { id: 'agriades-orbitulus', name_no: 'Fjellblåvinge', name_sci: 'Agriades orbitulus', family: 'Glansvinger', inatTaxonId: 780120, adbTaxonId: 84548 },
-
-  // Hvitvinger / Pieridae
   { id: 'pieris-brassicae', name_no: 'Stor kålsommerfugl', name_sci: 'Pieris brassicae', family: 'Hvitvinger', inatTaxonId: 55401, adbTaxonId: 29771 },
   { id: 'pieris-rapae', name_no: 'Liten kålsommerfugl', name_sci: 'Pieris rapae', family: 'Hvitvinger', inatTaxonId: 55626, adbTaxonId: 29772 },
   { id: 'pieris-napi', name_no: 'Rapssommerfugl', name_sci: 'Pieris napi', family: 'Hvitvinger', inatTaxonId: 54087, adbTaxonId: 29773 },
@@ -234,14 +142,10 @@ const BASE_SPECIES: Omit<Species, 'redlistCategory' | 'rarity'>[] = [
   { id: 'leptidea-juvernica', name_no: 'Enghvitvinge', name_sci: 'Leptidea juvernica', family: 'Hvitvinger', inatTaxonId: 709444, adbTaxonId: 84562 },
   { id: 'aporia-crataegi', name_no: 'Hagtornsommerfugl', name_sci: 'Aporia crataegi', family: 'Hvitvinger', inatTaxonId: 61295, adbTaxonId: 29769 },
   { id: 'colias-tyche', name_no: 'Polargulvinge', name_sci: 'Colias tyche', family: 'Hvitvinger', inatTaxonId: 217399, adbTaxonId: 141099 },
-
-  // Svalestjerter / Papilionidae
   { id: 'papilio-machaon', name_no: 'Svalestjert', name_sci: 'Papilio machaon', family: 'Svalestjerter', inatTaxonId: 56529, adbTaxonId: 29759 },
   { id: 'iphiclides-podalirius', name_no: 'Seglvinge', name_sci: 'Iphiclides podalirius', family: 'Svalestjerter', inatTaxonId: 62749, adbTaxonId: 29730 },
   { id: 'parnassius-apollo', name_no: 'Apollosommerfugl', name_sci: 'Parnassius apollo', family: 'Svalestjerter', inatTaxonId: 108799, adbTaxonId: 29755 },
   { id: 'parnassius-mnemosyne', name_no: 'Mnemosynesommerfugl', name_sci: 'Parnassius mnemosyne', family: 'Svalestjerter', inatTaxonId: 57485, adbTaxonId: 29756 },
-
-  // Smygere / Hesperiidae
   { id: 'ochlodes-sylvanus', name_no: 'Engsmyger', name_sci: 'Ochlodes sylvanus', family: 'Smygere', inatTaxonId: 61781, adbTaxonId: 29750 },
   { id: 'thymelicus-sylvestris', name_no: 'Brun bredvinge', name_sci: 'Thymelicus sylvestris', family: 'Smygere', inatTaxonId: 128544, adbTaxonId: 29720 },
   { id: 'thymelicus-lineola', name_no: 'Timoteismyger', name_sci: 'Thymelicus lineola', family: 'Smygere', inatTaxonId: 58484, adbTaxonId: 29746 },
@@ -255,8 +159,8 @@ const BASE_SPECIES: Omit<Species, 'redlistCategory' | 'rarity'>[] = [
   { id: 'carterocephalus-silvicola', name_no: 'Svartflekksmyger', name_sci: 'Carterocephalus silvicola', family: 'Smygere', inatTaxonId: 358618, adbTaxonId: 29743 },
 ];
 
-export const SPECIES: Species[] = BASE_SPECIES.map(species => {
-  const redlistCategory = REDLIST_CATEGORY_BY_SCI_NAME[species.name_sci.toLowerCase()] ?? 'LC';
+export const SPECIES: Species[] = BASE_SPECIES.map((species) => {
+  const redlistCategory = REDLIST_OVERRIDES[species.name_sci.toLowerCase()] ?? 'LC';
   return {
     ...species,
     redlistCategory,
@@ -264,8 +168,5 @@ export const SPECIES: Species[] = BASE_SPECIES.map(species => {
   };
 });
 
-export const SPECIES_BY_ID = Object.fromEntries(SPECIES.map(s => [s.id, s]));
-export const SPECIES_BY_INAT_ID = Object.fromEntries(SPECIES.map(s => [s.inatTaxonId, s]));
-
-
-
+export const SPECIES_BY_ID = Object.fromEntries(SPECIES.map((species) => [species.id, species]));
+export const SPECIES_BY_INAT_ID = Object.fromEntries(SPECIES.map((species) => [species.inatTaxonId, species]));
