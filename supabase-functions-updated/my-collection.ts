@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 const DAILY_POINTS = 10;
+const DUPLICATE_POINTS = 1;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -70,10 +71,15 @@ Deno.serve(async (req) => {
       }
 
       if (!countedSpecies.has(row.species_id)) {
+        // First valid catch for this species: full rarity points
         countedSpecies.add(row.species_id);
         leaderboardScore += row.points_awarded;
         validCatchCount += 1;
+      } else if (row.points_awarded === DUPLICATE_POINTS) {
+        // New-style duplicate catch: 1 consolation point
+        leaderboardScore += DUPLICATE_POINTS;
       }
+      // Old-style duplicates (counted=true but rarity points) from data anomalies are skipped
     }
 
     return new Response(
