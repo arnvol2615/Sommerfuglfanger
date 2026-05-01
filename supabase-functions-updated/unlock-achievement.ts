@@ -12,6 +12,7 @@ const ACHIEVEMENT_POINTS: Record<string, number> = {
   redlist_hunter: 25,
   all_rarities: 20,
   one_per_family: 25,
+  daily_dedicated: 20,
 };
 
 Deno.serve(async (req) => {

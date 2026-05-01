@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
     }
 
     const speciesCounts = new Map<string, number>();
+    const dailySpeciesSet = new Set<string>();
     let leaderboardScore = 0;
     let dailyCatchCount = 0;
     let validCatchCount = 0;
@@ -67,6 +68,7 @@ Deno.serve(async (req) => {
 
     for (const row of (catches ?? []) as Array<{ species_id: string; points_awarded: number; is_daily: boolean; counted_in_leaderboard: boolean }>) {
       speciesCounts.set(row.species_id, (speciesCounts.get(row.species_id) ?? 0) + 1);
+      if (row.is_daily) dailySpeciesSet.add(row.species_id);
 
       if (!row.counted_in_leaderboard) continue;
 
@@ -106,6 +108,7 @@ Deno.serve(async (req) => {
         unique_species_count: speciesCounts.size,
         total_catch_count: catches?.length ?? 0,
         found_species_ids: Array.from(speciesCounts.keys()).sort((a, b) => a.localeCompare(b)),
+        daily_species_ids: Array.from(dailySpeciesSet).sort((a, b) => a.localeCompare(b)),
         achievements,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

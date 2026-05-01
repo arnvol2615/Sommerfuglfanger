@@ -105,6 +105,7 @@ function AppContent() {
   const [lastCatch, setLastCatch] = useState<LastCatch | null>(null);
   const [dailyPhotoUrl, setDailyPhotoUrl] = useState<string | null>(null);
   const [serverFoundSpeciesIds, setServerFoundSpeciesIds] = useState<string[] | null>(null);
+  const [dailySpeciesIds, setDailySpeciesIds] = useState<string[]>([]);
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [serverCollectionStats, setServerCollectionStats] = useState<ServerCollectionStats | null>(null);
   const [showIssueModal, setShowIssueModal] = useState(false);
@@ -131,6 +132,7 @@ function AppContent() {
       .then((data) => {
         if (cancelled) return;
         setServerFoundSpeciesIds(data.found_species_ids);
+        setDailySpeciesIds(data.daily_species_ids ?? []);
         setServerCollectionStats({
           leaderboardScore: data.leaderboard_score,
           uniqueSpeciesCount: data.unique_species_count,
@@ -228,7 +230,13 @@ function AppContent() {
         const updatedFoundIds = isNew
           ? [...(serverFoundSpeciesIds ?? Object.keys(state.foundSpecies)), species.id]
           : (serverFoundSpeciesIds ?? Object.keys(state.foundSpecies));
-        const newlyUnlocked = checkNewlyUnlocked(updatedFoundIds, unlockedAchievements);
+        const updatedDailyIds = isDailyBonus && !dailySpeciesIds.includes(species.id)
+          ? [...dailySpeciesIds, species.id]
+          : dailySpeciesIds;
+        if (isDailyBonus && !dailySpeciesIds.includes(species.id)) {
+          setDailySpeciesIds(updatedDailyIds);
+        }
+        const newlyUnlocked = checkNewlyUnlocked(updatedFoundIds, unlockedAchievements, updatedDailyIds);
         if (newlyUnlocked.length > 0) {
           const now = new Date().toISOString();
           setUnlockedAchievements(prev => [
@@ -333,6 +341,7 @@ function AppContent() {
           <FamilyList
             gameState={state}
             foundSpeciesIds={serverFoundSpeciesIds ?? undefined}
+            dailySpeciesIds={dailySpeciesIds}
             unlockedAchievements={unlockedAchievements}
             apiLoading={collectionLoading}
             apiError={collectionError}

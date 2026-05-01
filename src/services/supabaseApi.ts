@@ -215,6 +215,7 @@ export interface MyCollectionResponse {
   unique_species_count: number;
   total_catch_count: number;
   found_species_ids: string[];
+  daily_species_ids: string[];
   achievements: { id: string; unlockedAt: string }[];
 }
 

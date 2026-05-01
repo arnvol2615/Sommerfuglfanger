@@ -6,8 +6,8 @@ export interface Achievement {
   description: string;
   icon: string;
   points: number;
-  check: (foundSpeciesIds: string[]) => boolean;
-  progress: (foundSpeciesIds: string[]) => { current: number; total: number };
+  check: (foundSpeciesIds: string[], dailySpeciesIds?: string[]) => boolean;
+  progress: (foundSpeciesIds: string[], dailySpeciesIds?: string[]) => { current: number; total: number };
 }
 
 const FAMILY_IDS = FAMILIES.map(f => f.id);
@@ -89,6 +89,15 @@ export const ACHIEVEMENTS: Achievement[] = [
       return { current: FAMILY_IDS.filter(f => found.has(f)).length, total: FAMILY_IDS.length };
     },
   },
+  {
+    id: 'daily_dedicated',
+    title: 'Daglig dedikert',
+    description: 'Fang 3 ulike daglige sommerfugler',
+    icon: '🌟',
+    points: 20,
+    check: (_ids, daily) => (daily ?? []).length >= 3,
+    progress: (_ids, daily) => ({ current: Math.min((daily ?? []).length, 3), total: 3 }),
+  },
 ];
 
 export interface UnlockedAchievement {
@@ -99,7 +108,8 @@ export interface UnlockedAchievement {
 export function checkNewlyUnlocked(
   foundSpeciesIds: string[],
   alreadyUnlocked: UnlockedAchievement[],
+  dailySpeciesIds?: string[],
 ): Achievement[] {
   const unlockedIds = new Set(alreadyUnlocked.map(u => u.id));
-  return ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id) && a.check(foundSpeciesIds));
+  return ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id) && a.check(foundSpeciesIds, dailySpeciesIds));
 }

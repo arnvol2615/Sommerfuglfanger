@@ -2,6 +2,7 @@ import { ACHIEVEMENTS, type UnlockedAchievement } from '../achievements';
 
 interface OppdragProps {
   foundSpeciesIds: string[];
+  dailySpeciesIds?: string[];
   unlockedAchievements: UnlockedAchievement[];
 }
 
@@ -9,7 +10,7 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export function Oppdrag({ foundSpeciesIds, unlockedAchievements }: OppdragProps) {
+export function Oppdrag({ foundSpeciesIds, dailySpeciesIds = [], unlockedAchievements }: OppdragProps) {
   const unlockedMap = new Map(unlockedAchievements.map(u => [u.id, u.unlockedAt]));
 
   return (
@@ -21,7 +22,7 @@ export function Oppdrag({ foundSpeciesIds, unlockedAchievements }: OppdragProps)
         {ACHIEVEMENTS.map(achievement => {
           const unlockedAt = unlockedMap.get(achievement.id);
           const unlocked = Boolean(unlockedAt);
-          const { current, total } = achievement.progress(foundSpeciesIds);
+          const { current, total } = achievement.progress(foundSpeciesIds, dailySpeciesIds);
           const pct = Math.round((current / total) * 100);
 
           return (
