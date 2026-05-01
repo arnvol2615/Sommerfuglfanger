@@ -44,12 +44,13 @@ function rarityBadgeText(rarity: Rarity): string {
 interface FamilyListProps {
   gameState: GameState;
   foundSpeciesIds?: string[];
+  dailySpeciesIds?: string[];
   unlockedAchievements?: UnlockedAchievement[];
   apiLoading?: boolean;
   apiError?: string | null;
 }
 
-export function FamilyList({ gameState, foundSpeciesIds, unlockedAchievements = [], apiLoading = false, apiError = null }: FamilyListProps) {
+export function FamilyList({ gameState, foundSpeciesIds, dailySpeciesIds = [], unlockedAchievements = [], apiLoading = false, apiError = null }: FamilyListProps) {
   const [openFamily, setOpenFamily] = useState<Family | null>(null);
   const [subTab, setSubTab] = useState<'arter' | 'oppdrag'>('arter');
   const foundSpeciesSet = foundSpeciesIds ? new Set(foundSpeciesIds) : null;
@@ -74,7 +75,7 @@ export function FamilyList({ gameState, foundSpeciesIds, unlockedAchievements = 
       </div>
 
       {subTab === 'oppdrag' && (
-        <Oppdrag foundSpeciesIds={effectiveFoundIds} unlockedAchievements={unlockedAchievements} />
+        <Oppdrag foundSpeciesIds={effectiveFoundIds} dailySpeciesIds={dailySpeciesIds} unlockedAchievements={unlockedAchievements} />
       )}
 
       {subTab === 'arter' && <div className="flex flex-col gap-3 px-4">
