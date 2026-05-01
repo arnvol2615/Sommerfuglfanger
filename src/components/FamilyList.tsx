@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { FAMILIES, SPECIES, type Family, type Rarity } from '../data/butterflies';
 import { FamilyIllustration } from './FamilyIllustration';
+import { Oppdrag } from './Oppdrag';
 import type { GameState } from '../hooks/useGameState';
+import type { UnlockedAchievement } from '../achievements';
 
 function getArtsdatabankenUrl(adbTaxonId: number): string {
   return `https://artsdatabanken.no/arter/takson/${adbTaxonId}`;
@@ -42,17 +44,40 @@ function rarityBadgeText(rarity: Rarity): string {
 interface FamilyListProps {
   gameState: GameState;
   foundSpeciesIds?: string[];
+  unlockedAchievements?: UnlockedAchievement[];
   apiLoading?: boolean;
   apiError?: string | null;
 }
 
-export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, apiError = null }: FamilyListProps) {
+export function FamilyList({ gameState, foundSpeciesIds, unlockedAchievements = [], apiLoading = false, apiError = null }: FamilyListProps) {
   const [openFamily, setOpenFamily] = useState<Family | null>(null);
+  const [subTab, setSubTab] = useState<'arter' | 'oppdrag'>('arter');
   const foundSpeciesSet = foundSpeciesIds ? new Set(foundSpeciesIds) : null;
   const isFound = (speciesId: string) => foundSpeciesSet ? foundSpeciesSet.has(speciesId) : Boolean(gameState.foundSpecies[speciesId]);
+  const effectiveFoundIds = foundSpeciesIds ?? Object.keys(gameState.foundSpecies);
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-1 mx-4 mt-4 bg-gray-100 rounded-xl p-1">
+        {(['arter', 'oppdrag'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setSubTab(t)}
+            className={
+              'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ' +
+              (subTab === t ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700')
+            }
+          >
+            {t === 'arter' ? '🦋 Arter' : '🎯 Oppdrag'}
+          </button>
+        ))}
+      </div>
+
+      {subTab === 'oppdrag' && (
+        <Oppdrag foundSpeciesIds={effectiveFoundIds} unlockedAchievements={unlockedAchievements} />
+      )}
+
+      {subTab === 'arter' && <div className="flex flex-col gap-3 px-4">
       <h2 className="text-xl font-bold text-gray-800">Min samling</h2>
       {apiLoading && (
         <p className="text-sm text-gray-500">Henter samling fra server…</p>
@@ -150,6 +175,7 @@ export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, api
           </div>
         );
       })}
-    </div>
+    </div>}
+  </div>
   );
 }

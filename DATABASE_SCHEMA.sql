@@ -87,7 +87,18 @@ CREATE INDEX idx_catches_leaderboard ON catches(counted_in_leaderboard, found_at
 CREATE INDEX idx_catches_geo ON catches(lat, lng);
 CREATE INDEX idx_catches_species ON catches(species_id);
 
--- 4. Create view for leaderboard (top users by valid catches)
+-- 4. Create user_achievements table
+CREATE TABLE user_achievements (
+  user_id        uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  achievement_id text NOT NULL,
+  unlocked_at    timestamptz NOT NULL DEFAULT now(),
+  points_awarded integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, achievement_id)
+);
+
+CREATE INDEX idx_user_achievements_user_id ON user_achievements(user_id);
+
+-- 5. Create view for leaderboard (top users by valid catches)
 CREATE VIEW leaderboard_view AS
 SELECT 
   u.id as user_id,
@@ -154,6 +165,9 @@ ORDER BY total_score DESC;
 -- 6c. Migration: add is_daily column to existing catches table
 -- ALTER TABLE catches ADD COLUMN IF NOT EXISTS is_daily boolean NOT NULL DEFAULT false;
 -- CREATE INDEX IF NOT EXISTS idx_catches_daily ON catches(user_id, is_daily, found_at DESC);
+
+-- 6d. Migration: add points_awarded to user_achievements
+-- ALTER TABLE user_achievements ADD COLUMN IF NOT EXISTS points_awarded integer NOT NULL DEFAULT 0;
 
 -- 7. Create function to compute user authenticity score
 CREATE OR REPLACE FUNCTION compute_user_authenticity(user_id_param uuid)

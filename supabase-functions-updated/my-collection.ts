@@ -41,10 +41,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: catches, error } = await supabase
-      .from("catches")
-      .select("species_id, points_awarded, is_daily, counted_in_leaderboard")
-      .eq("user_id", session.user_id);
+    const [{ data: catches, error }, { data: achievementRows }] = await Promise.all([
+      supabase
+        .from("catches")
+        .select("species_id, points_awarded, is_daily, counted_in_leaderboard")
+        .eq("user_id", session.user_id),
+      supabase
+        .from("user_achievements")
+        .select("achievement_id, unlocked_at, points_awarded")
+        .eq("user_id", session.user_id),
+    ]);
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -82,14 +88,25 @@ Deno.serve(async (req) => {
       // Old-style duplicates (counted=true but rarity points) from data anomalies are skipped
     }
 
+    const achievements = (achievementRows ?? []).map(
+      (r: { achievement_id: string; unlocked_at: string; points_awarded?: number }) => ({
+        id: r.achievement_id,
+        unlockedAt: r.unlocked_at,
+        pointsAwarded: r.points_awarded ?? 0,
+      })
+    );
+
+    const achievementScore = achievements.reduce((sum, a) => sum + a.pointsAwarded, 0);
+
     return new Response(
       JSON.stringify({
-        leaderboard_score: leaderboardScore,
+        leaderboard_score: leaderboardScore + achievementScore,
         valid_catch_count: validCatchCount,
         daily_catch_count: dailyCatchCount,
         unique_species_count: speciesCounts.size,
         total_catch_count: catches?.length ?? 0,
         found_species_ids: Array.from(speciesCounts.keys()).sort((a, b) => a.localeCompare(b)),
+        achievements,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
