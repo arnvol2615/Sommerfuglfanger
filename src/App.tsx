@@ -99,6 +99,7 @@ function AppContent() {
   const { state, registerSpecies } = useGameState();
   const dailyButterfly = getDailyButterfly();
   const [tab, setTab] = useState<Tab>("camera");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [pending, setPending] = useState<PendingIdentification | null>(null);
   const [lastCatch, setLastCatch] = useState<LastCatch | null>(null);
   const [dailyPhotoUrl, setDailyPhotoUrl] = useState<string | null>(null);
@@ -250,7 +251,7 @@ function AppContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-svh">
+    <div className="flex flex-col h-svh">
       <ScoreHeader
         username={username}
         totalPoints={serverCollectionStats?.leaderboardScore ?? state.totalPoints}
@@ -318,34 +319,30 @@ function AppContent() {
             </button>
           </div>
 
-          <nav className="flex border-t border-gray-200 bg-white shadow-inner">
+          <nav className="flex border-t border-gray-200 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+            {(["camera", "collection", "leaderboard"] as const).map((t) => {
+              const active = tab === t;
+              const label = t === "camera" ? "Kamera" : t === "collection" ? "Samling" : "Toppliste";
+              const icon = t === "camera" ? "📷" : t === "collection" ? "🦋" : "🏆";
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={"flex-1 flex flex-col items-center pb-3 gap-0.5 transition-colors " + (active ? "text-green-700 bg-green-50" : "text-gray-400 hover:text-gray-500")}
+                >
+                  <span className={"block h-0.5 w-10 rounded-full mb-1 transition-colors " + (active ? "bg-green-600" : "bg-transparent")} />
+                  <span className="text-2xl leading-none">{icon}</span>
+                  <span className={"text-xs " + (active ? "font-bold" : "font-medium")}>{label}</span>
+                </button>
+              );
+            })}
             <button
-              onClick={() => setTab("camera")}
-              className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "camera" ? "text-green-700" : "text-gray-400")}
+              onClick={() => setShowLogoutConfirm(true)}
+              className="flex-1 flex flex-col items-center pb-3 gap-0.5 text-gray-400 hover:text-gray-500"
             >
-              <span className="text-2xl">📷</span>
-              Kamera
-            </button>
-            <button
-              onClick={() => setTab("collection")}
-              className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "collection" ? "text-green-700" : "text-gray-400")}
-            >
-              <span className="text-2xl">🦋</span>
-              Samling
-            </button>
-            <button
-              onClick={() => setTab("leaderboard")}
-              className={"flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors " + (tab === "leaderboard" ? "text-green-700" : "text-gray-400")}
-            >
-              <span className="text-2xl">🏆</span>
-              Toppliste
-            </button>
-            <button
-              onClick={logout}
-              className="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium text-gray-400"
-            >
-              <span className="text-2xl">🚪</span>
-              Logg ut
+              <span className="block h-0.5 w-10 mb-1" />
+              <span className="text-2xl leading-none">🚪</span>
+              <span className="text-xs font-medium">Logg ut</span>
             </button>
           </nav>
         </>
@@ -363,6 +360,33 @@ function AppContent() {
           bonusPoints={lastCatch.bonusPoints}
           onClose={() => setLastCatch(null)}
         />
+      )}
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
+          <div className="w-full max-w-xs rounded-3xl bg-white shadow-2xl overflow-hidden animate-[fadeIn_.15s_ease-out]">
+            <div className="px-6 pt-6 pb-4 text-center">
+              <span className="text-4xl">🚪</span>
+              <h3 className="mt-3 text-lg font-bold text-gray-900">Logg ut?</h3>
+              <p className="mt-1 text-sm text-gray-500">Fremgangen din er lagret og du kan logge inn igjen når som helst.</p>
+            </div>
+            <div className="flex border-t border-gray-100">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-4 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Avbryt
+              </button>
+              <div className="w-px bg-gray-100" />
+              <button
+                onClick={() => { setShowLogoutConfirm(false); logout(); }}
+                className="flex-1 py-4 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+              >
+                Logg ut
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showIssueModal && (
