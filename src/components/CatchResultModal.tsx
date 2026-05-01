@@ -11,7 +11,7 @@ interface StarParticle {
 }
 
 const STAR_CONFIGS: Record<Species['rarity'], { count: number; chars: string[] }> = {
-  'Vanlig':        { count: 0,  chars: [] },
+  'Vanlig':        { count: 8,  chars: ['✦', '✧', '⭐'] },
   'Uvanlig':       { count: 20, chars: ['✨', '⭐', '✦'] },
   'Sjelden':       { count: 40, chars: ['⭐', '🌟', '✨', '💫'] },
   'Svaert sjelden':{ count: 65, chars: ['🌟', '⭐', '✨', '💫', '👑', '💥'] },
@@ -132,7 +132,7 @@ export function CatchResultModal({
 
   return (
     <>
-    <StarShower rarity={species.rarity} />
+    {(isNew || isDailyBonus) && <StarShower rarity={species.rarity} />}
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-[fadeIn_.2s_ease-out]">
         <div className="relative p-5 bg-gradient-to-b from-green-50 to-white">
