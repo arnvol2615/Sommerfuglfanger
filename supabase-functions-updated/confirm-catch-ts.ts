@@ -17,6 +17,7 @@ const RARITY_MULTIPLIER: Record<string, number> = {
 };
 
 const DAILY_POINTS = 10;
+const DUPLICATE_POINTS = 1;
 
 // Same order as src/data/butterflies.ts BASE_SPECIES array
 const SPECIES_IDS: string[] = [
@@ -213,7 +214,7 @@ Deno.serve(async (req) => {
   }
 
   // ── Regular catch path ──────────────────────────────────────────────────────
-  const points = Math.round(10 * (RARITY_MULTIPLIER[rarity] ?? 1));
+  const rarityPoints = Math.round(10 * (RARITY_MULTIPLIER[rarity] ?? 1));
   let countedInLeaderboard = true;
 
   const { count: existingSpeciesCount, error: existingSpeciesErr } = await supabase
@@ -221,7 +222,6 @@ Deno.serve(async (req) => {
     .select("id", { count: "exact", head: true })
     .eq("user_id", session.user_id)
     .eq("species_id", speciesId)
-    .eq("counted_in_leaderboard", true)
     .eq("is_daily", false);
 
   if (existingSpeciesErr) {
@@ -231,16 +231,16 @@ Deno.serve(async (req) => {
     });
   }
 
-  if ((existingSpeciesCount ?? 0) > 0) {
-    countedInLeaderboard = false;
-    suspicionFlags.push("duplicate_species");
+  const isDuplicate = (existingSpeciesCount ?? 0) > 0;
+  if (isDuplicate) {
+    suspicionFlags.push("duplicate_catch");
   }
 
   if (body.lat !== undefined && body.lng !== undefined) {
     const lat = body.lat;
     const lng = body.lng;
     const windowStart = new Date(Date.now() - LOCATION_WINDOW_HOURS * 3600 * 1000).toISOString();
-    
+
     const { count } = await supabase
       .from("catches")
       .select("id", { count: "exact", head: true })
@@ -258,13 +258,16 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Duplicate catches award 1 point (unless location is flagged)
+  const pointsAwarded = isDuplicate ? DUPLICATE_POINTS : rarityPoints;
+
   // Save catch
   const { error: insertErr } = await supabase.from("catches").insert({
     user_id: session.user_id,
     species_id: speciesId,
     rarity,
     vision_score: visionScore,
-    points_awarded: points,
+    points_awarded: pointsAwarded,
     lat: body.lat ?? null,
     lng: body.lng ?? null,
     has_exif: hasExif,
@@ -285,7 +288,7 @@ Deno.serve(async (req) => {
   return new Response(
     JSON.stringify({
       success: true,
-      pointsAwarded: points,
+      pointsAwarded,
       countedInLeaderboard,
       suspicionFlags,
     }),

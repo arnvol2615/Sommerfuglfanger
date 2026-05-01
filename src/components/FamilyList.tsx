@@ -112,6 +112,11 @@ export function FamilyList({ gameState, foundSpeciesIds, apiLoading = false, api
                             {rarityBadgeText(species.rarity)}
                           </span>
                         </div>
+                        {found && (gameState.catchCounts?.[species.id] ?? 0) > 1 && (
+                          <div className="mt-1 text-xs text-green-700 font-medium">
+                            Fanget {gameState.catchCounts![species.id]} ganger
+                          </div>
+                        )}
                         <div className="mt-1 text-xs flex items-center gap-2">
                           <a
                             href={getArtsdatabankenUrl(species.adbTaxonId)}

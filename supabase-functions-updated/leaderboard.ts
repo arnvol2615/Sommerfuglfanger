@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 const DAILY_POINTS = 10;
+const DUPLICATE_POINTS = 1;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -136,14 +137,16 @@ Deno.serve(async (req) => {
       prev.catches.push({ has_exif: row.has_exif, device_make: row.device_make, lat: row.lat, lng: row.lng });
 
       if (row.is_daily) {
-        // Daily catches always count as a fixed 10 pts.
         prev.score += DAILY_POINTS;
         prev.daily_catch_count += 1;
       } else if (!prev.countedSpecies.has(row.species_id)) {
-        // Regular catches: only count once per unique species
+        // First valid catch for this species: full rarity points
         prev.countedSpecies.add(row.species_id);
         prev.score += row.points_awarded;
         prev.valid_catch_count += 1;
+      } else if (row.points_awarded === DUPLICATE_POINTS) {
+        // New-style duplicate catch: 1 consolation point
+        prev.score += DUPLICATE_POINTS;
       }
 
       scoreMap.set(name, prev);

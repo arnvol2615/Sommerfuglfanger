@@ -18,6 +18,7 @@ export interface GameState {
   foundSpecies: Record<string, FoundEntry>;
   totalPoints: number;
   dailyBonusClaimed?: string; // date string YYYY-MM-DD
+  catchCounts?: Record<string, number>; // total catches per speciesId (including first)
 }
 
 const STORAGE_KEY = 'sommerfuglfanger_v1';
@@ -29,6 +30,7 @@ const DEFAULT_STATE: GameState = {
 
 const BASE_POINTS = 10;
 const DAILY_POINTS = 10;
+const DUPLICATE_POINTS = 1;
 
 function todayString(): string {
   const d = new Date();
@@ -71,16 +73,24 @@ function loadState(): GameState {
   return DEFAULT_STATE;
 }
 
-// Recompute totalPoints from known rarity values to fix legacy localStorage
-// where daily bonus was 50 pts. Now: base rarity pts + 10 if daily was claimed.
+// Recompute totalPoints from known rarity values to fix legacy localStorage.
+// Now: base rarity pts per unique species + DUPLICATE_POINTS per extra catch + DAILY_POINTS if claimed.
 function migrateState(state: GameState): GameState {
   const recomputed = Object.values(state.foundSpecies).reduce((sum, entry) => {
     const species = SPECIES_BY_ID[entry.speciesId];
     if (!species) return sum;
-    return sum + Math.round(BASE_POINTS * getRarityMultiplier(species.rarity));
+    const basePts = Math.round(BASE_POINTS * getRarityMultiplier(species.rarity));
+    const catchCount = state.catchCounts?.[entry.speciesId] ?? 1;
+    const duplicates = Math.max(0, catchCount - 1);
+    return sum + basePts + duplicates * DUPLICATE_POINTS;
   }, 0);
   const dailyBonus = state.dailyBonusClaimed ? DAILY_POINTS : 0;
-  const corrected = recomputed + dailyBonus;
+  // Handle legacy state that used duplicateCatchCount instead of per-species catchCounts
+  const legacy = state as GameState & { duplicateCatchCount?: number };
+  const legacyDuplicatePoints = !state.catchCounts && legacy.duplicateCatchCount
+    ? legacy.duplicateCatchCount * DUPLICATE_POINTS
+    : 0;
+  const corrected = recomputed + dailyBonus + legacyDuplicatePoints;
   if (corrected === state.totalPoints) return state;
   return { ...state, totalPoints: corrected };
 }
@@ -103,9 +113,17 @@ export function useGameState() {
       const isDailyBonus = speciesId === daily.id && state.dailyBonusClaimed !== today;
       const alreadyFound = Boolean(state.foundSpecies[speciesId]);
 
-      // Block repeat catches unless this is the unclaimed daily butterfly
+      // Repeat catch (not the unclaimed daily): award 1 consolation point
       if (alreadyFound && !isDailyBonus) {
-        return { isNew: false, points: 0, isDailyBonus: false, bonusPoints: 0 };
+        setState(prev => ({
+          ...prev,
+          totalPoints: prev.totalPoints + DUPLICATE_POINTS,
+          catchCounts: {
+            ...prev.catchCounts,
+            [speciesId]: (prev.catchCounts?.[speciesId] ?? 1) + 1,
+          },
+        }));
+        return { isNew: false, points: DUPLICATE_POINTS, isDailyBonus: false, bonusPoints: 0 };
       }
 
       // Daily catch: always 10 pts shown as bonusPoints so the modal displays correctly
@@ -121,10 +139,17 @@ export function useGameState() {
               ...prev.foundSpecies,
               [speciesId]: { speciesId, foundAt: Date.now(), points: basePoints, location },
             };
+        const newCatchCounts = isDailyBonus
+          ? prev.catchCounts
+          : {
+              ...prev.catchCounts,
+              [speciesId]: (prev.catchCounts?.[speciesId] ?? 0) + 1,
+            };
         return {
           foundSpecies: newFoundSpecies,
           totalPoints: prev.totalPoints + totalNew,
           dailyBonusClaimed: isDailyBonus ? today : prev.dailyBonusClaimed,
+          catchCounts: newCatchCounts,
         };
       });
       return { isNew: !alreadyFound, points: basePoints, isDailyBonus, bonusPoints };
