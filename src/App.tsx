@@ -11,7 +11,8 @@ import { LoginScreen } from "./components/LoginScreen";
 import { CatchResultModal } from "./components/CatchResultModal";
 import { Leaderboard } from "./components/Leaderboard";
 import { IssueReportModal } from "./components/IssueReportModal";
-import { scoreImageViaBackend, confirmCatch, getMyCollection, createGithubIssue, type RawTopResult } from "./services/supabaseApi";
+import { scoreImageViaBackend, confirmCatch, getMyCollection, unlockAchievement, createGithubIssue, type RawTopResult } from "./services/supabaseApi";
+import { checkNewlyUnlocked, type UnlockedAchievement } from "./achievements";
 import type { VisionResult } from "./services/inatVision";
 import { SPECIES, type Species } from "./data/butterflies";
 
@@ -96,7 +97,7 @@ async function hasExifMetadata(file: File): Promise<boolean> {
 
 function AppContent() {
   const { isAuthenticated, sessionToken, username, logout } = useAuth();
-  const { state, registerSpecies } = useGameState();
+  const { state, registerSpecies, addPoints } = useGameState();
   const dailyButterfly = getDailyButterfly();
   const [tab, setTab] = useState<Tab>("camera");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -107,6 +108,7 @@ function AppContent() {
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [serverCollectionStats, setServerCollectionStats] = useState<ServerCollectionStats | null>(null);
   const [showIssueModal, setShowIssueModal] = useState(false);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<UnlockedAchievement[]>([]);
   const collectionLoading = serverFoundSpeciesIds === null && collectionError === null;
 
   useEffect(() => {
@@ -133,6 +135,7 @@ function AppContent() {
           leaderboardScore: data.leaderboard_score,
           uniqueSpeciesCount: data.unique_species_count,
         });
+        setUnlockedAchievements(data.achievements ?? []);
         setCollectionError(null);
       })
       .catch((err) => {
@@ -219,6 +222,34 @@ function AppContent() {
       const familyTotal = familySpecies.length;
       const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;
       const familyFound = isNew ? alreadyFoundInFamily + 1 : alreadyFoundInFamily;
+
+      // Check and unlock newly met achievements
+      if (sessionToken) {
+        const updatedFoundIds = isNew
+          ? [...(serverFoundSpeciesIds ?? Object.keys(state.foundSpecies)), species.id]
+          : (serverFoundSpeciesIds ?? Object.keys(state.foundSpecies));
+        const newlyUnlocked = checkNewlyUnlocked(updatedFoundIds, unlockedAchievements);
+        if (newlyUnlocked.length > 0) {
+          const now = new Date().toISOString();
+          setUnlockedAchievements(prev => [
+            ...prev,
+            ...newlyUnlocked.map(a => ({ id: a.id, unlockedAt: now })),
+          ]);
+          newlyUnlocked.forEach(a => {
+            unlockAchievement(sessionToken, a.id)
+              .then(pts => {
+                if (pts > 0) {
+                  addPoints(pts);
+                  setServerCollectionStats(prev =>
+                    prev ? { ...prev, leaderboardScore: prev.leaderboardScore + pts } : prev
+                  );
+                }
+              })
+              .catch(() => {});
+          });
+        }
+      }
+
       setPending(null);
       setLastCatch({ species, isNew, points, previewUrl, familyFound, familyTotal, isDailyBonus, bonusPoints });
     };
@@ -302,6 +333,7 @@ function AppContent() {
           <FamilyList
             gameState={state}
             foundSpeciesIds={serverFoundSpeciesIds ?? undefined}
+            unlockedAchievements={unlockedAchievements}
             apiLoading={collectionLoading}
             apiError={collectionError}
           />

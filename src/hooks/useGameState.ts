@@ -162,9 +162,13 @@ export function useGameState() {
     [state.foundSpecies]
   );
 
+  const addPoints = useCallback((n: number) => {
+    setState(prev => ({ ...prev, totalPoints: prev.totalPoints + n }));
+  }, []);
+
   const resetProgress = useCallback(() => {
     setState(DEFAULT_STATE);
   }, []);
 
-  return { state, registerSpecies, hasFound, resetProgress };
+  return { state, registerSpecies, hasFound, addPoints, resetProgress };
 }

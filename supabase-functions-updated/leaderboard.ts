@@ -106,11 +106,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Query catches joined with users — include EXIF, device, and location data for authenticity scoring
-    const { data: rawData, error } = await supabase
-      .from("catches")
-      .select("species_id, points_awarded, is_daily, users!inner(username, id), has_exif, device_make, lat, lng")
-      .eq("counted_in_leaderboard", true);
+    // Query catches and achievement points in parallel
+    const [{ data: rawData, error }, { data: achievementData }] = await Promise.all([
+      supabase
+        .from("catches")
+        .select("species_id, points_awarded, is_daily, users!inner(username, id), has_exif, device_make, lat, lng")
+        .eq("counted_in_leaderboard", true),
+      supabase
+        .from("user_achievements")
+        .select("user_id, points_awarded"),
+    ]);
 
     if (error) {
       console.error("leaderboard query error:", JSON.stringify(error));
@@ -118,6 +123,12 @@ Deno.serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Sum achievement points per user_id
+    const achievementScoreByUserId = new Map<string, number>();
+    for (const row of (achievementData ?? []) as Array<{ user_id: string; points_awarded: number }>) {
+      achievementScoreByUserId.set(row.user_id, (achievementScoreByUserId.get(row.user_id) ?? 0) + (row.points_awarded ?? 0));
     }
 
     // Aggregate per user and collect metadata for authenticity scoring
@@ -184,9 +195,10 @@ Deno.serve(async (req) => {
     const rows = Array.from(scoreMap.entries())
       .map(([username, s]) => {
         const auth = computeAuthenticityScore(s.catches);
+        const achievementScore = achievementScoreByUserId.get(s.user_id) ?? 0;
         return {
           username,
-          score: s.score,
+          score: s.score + achievementScore,
           valid_catch_count: s.valid_catch_count,
           daily_catch_count: s.daily_catch_count,
           authenticity_score: auth.authenticity_score,

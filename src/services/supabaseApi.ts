@@ -215,6 +215,21 @@ export interface MyCollectionResponse {
   unique_species_count: number;
   total_catch_count: number;
   found_species_ids: string[];
+  achievements: { id: string; unlockedAt: string }[];
+}
+
+export async function unlockAchievement(sessionToken: string, achievementId: string): Promise<number> {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/unlock-achievement`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${sessionToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ achievement_id: achievementId }),
+  });
+  const data = (await response.json()) as { success?: boolean; points_awarded?: number; error?: string };
+  return data.points_awarded ?? 0;
 }
 
 export interface HeatmapPoint {
