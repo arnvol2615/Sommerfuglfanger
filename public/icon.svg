@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <circle cx="256" cy="256" r="256" fill="#16a34a"/>
+
+  <!-- Upper left wing -->
+  <ellipse cx="148" cy="210" rx="118" ry="85" fill="#4ade80" transform="rotate(-25 148 210)"/>
+  <!-- Upper right wing -->
+  <ellipse cx="364" cy="210" rx="118" ry="85" fill="#4ade80" transform="rotate(25 364 210)"/>
+
+  <!-- Lower left wing -->
+  <ellipse cx="165" cy="330" rx="88" ry="62" fill="#22c55e" transform="rotate(18 165 330)"/>
+  <!-- Lower right wing -->
+  <ellipse cx="347" cy="330" rx="88" ry="62" fill="#22c55e" transform="rotate(-18 347 330)"/>
+
+  <!-- Wing highlights -->
+  <ellipse cx="142" cy="202" rx="58" ry="40" fill="#bbf7d0" opacity="0.45" transform="rotate(-25 142 202)"/>
+  <ellipse cx="370" cy="202" rx="58" ry="40" fill="#bbf7d0" opacity="0.45" transform="rotate(25 370 202)"/>
+
+  <!-- Wing spots -->
+  <circle cx="120" cy="230" r="16" fill="#166534" opacity="0.35"/>
+  <circle cx="392" cy="230" r="16" fill="#166534" opacity="0.35"/>
+  <circle cx="175" cy="345" r="11" fill="#166534" opacity="0.3"/>
+  <circle cx="337" cy="345" r="11" fill="#166534" opacity="0.3"/>
+
+  <!-- Body -->
+  <ellipse cx="256" cy="268" rx="10" ry="90" fill="#14532d"/>
+  <!-- Head -->
+  <circle cx="256" cy="172" r="14" fill="#14532d"/>
+
+  <!-- Antennae -->
+  <path d="M250 162 Q225 130 205 108" stroke="#14532d" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M262 162 Q287 130 307 108" stroke="#14532d" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <circle cx="202" cy="105" r="9" fill="#14532d"/>
+  <circle cx="310" cy="105" r="9" fill="#14532d"/>
+</svg>
