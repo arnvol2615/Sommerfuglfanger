@@ -10,6 +10,7 @@ const MIN_PASSWORD_LENGTH = 8;
 export function LoginScreen() {
   const { setAuth } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
+  const [identifier, setIdentifier] = useState(''); // brukernavn eller e-post (login)
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,48 +22,63 @@ export function LoginScreen() {
   const [showInstall, setShowInstall] = useState(false);
 
   async function handleAuth() {
-    const trimmedUsername = username.trim();
-    if (!trimmedUsername) {
-      setError('Skriv inn brukernavn.');
-      return;
-    }
     if (!password) {
       setError('Skriv inn passord.');
       return;
     }
 
-    if (mode === 'register') {
-      const trimmedEmail = email.trim();
-      if (!trimmedEmail) {
-        setError('Skriv inn e-post.');
+    if (mode === 'login') {
+      const trimmedIdentifier = identifier.trim();
+      if (!trimmedIdentifier) {
+        setError('Skriv inn brukernavn eller e-post.');
         return;
       }
-      if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
-        setError('Skriv inn en gyldig e-postadresse.');
-        return;
+      setLoading(true);
+      setError('');
+      setMessage('');
+      try {
+        const response = await login(trimmedIdentifier, password);
+        setAuth(response.sessionToken, response.username);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Innlogging feilet. Prøv igjen.');
+      } finally {
+        setLoading(false);
       }
-      if (password.length < MIN_PASSWORD_LENGTH) {
-        setError(`Passord ma vaere minst ${MIN_PASSWORD_LENGTH} tegn.`);
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Passordene matcher ikke.');
-        return;
-      }
+      return;
+    }
+
+    // Register
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    if (!trimmedUsername) {
+      setError('Skriv inn brukernavn.');
+      return;
+    }
+    if (!trimmedEmail) {
+      setError('Skriv inn e-post.');
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setError('Skriv inn en gyldig e-postadresse.');
+      return;
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Passord må være minst ${MIN_PASSWORD_LENGTH} tegn.`);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passordene matcher ikke.');
+      return;
     }
 
     setLoading(true);
     setError('');
     setMessage('');
-
     try {
-      const response = mode === 'login'
-        ? await login(trimmedUsername, password)
-        : await register(trimmedUsername, email.trim(), password);
+      const response = await register(trimmedUsername, trimmedEmail, password);
       setAuth(response.sessionToken, response.username);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Innlogging feilet. Proev igjen.';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Registrering feilet. Prøv igjen.');
     } finally {
       setLoading(false);
     }
@@ -84,11 +100,20 @@ export function LoginScreen() {
           {mode === 'register' && 'Opprett bruker'}
         </h2>
         <p className="text-sm text-gray-600">
-          {mode === 'login' && 'Logg inn med brukernavn og passord for aa starte spillet.'}
+          {mode === 'login' && 'Logg inn med brukernavn eller e-post og passord.'}
           {mode === 'register' && 'Opprett en ny bruker med brukernavn, e-post og passord.'}
         </p>
 
-        {(
+        {mode === 'login' ? (
+          <input
+            value={identifier}
+            onChange={e => setIdentifier(e.target.value)}
+            placeholder="Brukernavn eller e-post"
+            className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+            aria-label="Brukernavn eller e-post"
+            autoComplete="username"
+          />
+        ) : (
           <input
             value={username}
             onChange={e => setUsername(e.target.value)}

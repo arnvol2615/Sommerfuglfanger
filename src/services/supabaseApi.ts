@@ -18,7 +18,7 @@ export interface LoginResponse {
 
 async function callPublicAuthFunction(
   functionName: 'login' | 'register',
-  payload: { username: string; password: string; email?: string }
+  payload: { username?: string; identifier?: string; password: string; email?: string }
 ): Promise<LoginResponse> {
   const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
     method: 'POST',
@@ -37,8 +37,8 @@ async function callPublicAuthFunction(
   return data;
 }
 
-export async function login(username: string, password: string): Promise<LoginResponse> {
-  return callPublicAuthFunction('login', { username, password });
+export async function login(identifier: string, password: string): Promise<LoginResponse> {
+  return callPublicAuthFunction('login', { identifier, password });
 }
 
 export async function register(username: string, email: string, password: string): Promise<LoginResponse> {

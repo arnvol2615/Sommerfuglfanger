@@ -59,20 +59,23 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const body = await req.json() as { username?: string; password?: string };
-    const username = body.username?.trim() ?? "";
+    const body = await req.json() as { identifier?: string; username?: string; password?: string };
+    const identifier = (body.identifier ?? body.username ?? "").trim();
     const password = body.password ?? "";
-    const normalizedUsername = username.toLowerCase();
     const clientIp = getClientIp(req);
 
-    if (!username || !password) {
-      return new Response(JSON.stringify({ error: "Mangler brukernavn eller passord" }), {
+    if (!identifier || !password) {
+      return new Response(JSON.stringify({ error: "Mangler brukernavn/e-post eller passord" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (!USERNAME_REGEX.test(username)) {
+    const isEmail = identifier.includes("@");
+    const normalizedIdentifier = identifier.toLowerCase();
+
+    // Username format check only applies when not logging in with email
+    if (!isEmail && !USERNAME_REGEX.test(identifier)) {
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -84,13 +87,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const [ipFailures, usernameFailures] = await Promise.all([
+    const [ipFailures, identifierFailures] = await Promise.all([
       countRecentAttempts(supabase, "login_ip_failure", clientIp, LOGIN_IP_WINDOW_MINUTES),
-      countRecentAttempts(supabase, "login_username_failure", normalizedUsername, LOGIN_USERNAME_WINDOW_MINUTES),
+      countRecentAttempts(supabase, "login_username_failure", normalizedIdentifier, LOGIN_USERNAME_WINDOW_MINUTES),
     ]);
 
-    if (ipFailures >= LOGIN_IP_MAX_FAILURES || usernameFailures >= LOGIN_USERNAME_MAX_FAILURES) {
-      return new Response(JSON.stringify({ error: "For mange innloggingsforsok. Proev igjen senere." }), {
+    if (ipFailures >= LOGIN_IP_MAX_FAILURES || identifierFailures >= LOGIN_USERNAME_MAX_FAILURES) {
+      return new Response(JSON.stringify({ error: "For mange innloggingsforsøk. Prøv igjen senere." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -99,7 +102,7 @@ Deno.serve(async (req) => {
     const { data: user, error: selectErr } = await supabase
       .from("users")
       .select("id, username, password_hash")
-      .eq("username", username)
+      .eq(isEmail ? "email" : "username", isEmail ? normalizedIdentifier : identifier)
       .maybeSingle();
 
     if (selectErr) {
@@ -112,7 +115,7 @@ Deno.serve(async (req) => {
     if (!user) {
       await Promise.all([
         recordAttempt(supabase, "login_ip_failure", clientIp),
-        recordAttempt(supabase, "login_username_failure", normalizedUsername),
+        recordAttempt(supabase, "login_username_failure", normalizedIdentifier),
       ]);
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
         status: 401,
@@ -124,7 +127,7 @@ Deno.serve(async (req) => {
     if (!validPassword) {
       await Promise.all([
         recordAttempt(supabase, "login_ip_failure", clientIp),
-        recordAttempt(supabase, "login_username_failure", normalizedUsername),
+        recordAttempt(supabase, "login_username_failure", normalizedIdentifier),
       ]);
       return new Response(JSON.stringify({ error: "Ugyldig brukernavn eller passord" }), {
         status: 401,
