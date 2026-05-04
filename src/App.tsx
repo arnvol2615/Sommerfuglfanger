@@ -97,7 +97,7 @@ async function hasExifMetadata(file: File): Promise<boolean> {
 
 function AppContent() {
   const { isAuthenticated, sessionToken, username, logout } = useAuth();
-  const { state, registerSpecies, addPoints } = useGameState();
+  const { state, registerSpecies, addPoints, syncWithServer } = useGameState(username);
   const dailyButterfly = getDailyButterfly();
   const [tab, setTab] = useState<Tab>("camera");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -139,6 +139,7 @@ function AppContent() {
         });
         setUnlockedAchievements(data.achievements ?? []);
         setCollectionError(null);
+        syncWithServer(data.found_species_ids);
       })
       .catch((err) => {
         if (cancelled) return;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { SPECIES, SPECIES_BY_ID } from '../data/butterflies';
 import type { Rarity, Species } from '../data/butterflies';
 
@@ -21,7 +21,7 @@ export interface GameState {
   catchCounts?: Record<string, number>; // total catches per speciesId (including first)
 }
 
-const STORAGE_KEY = 'sommerfuglfanger_v1';
+const STORAGE_KEY_PREFIX = 'sommerfuglfanger_v1';
 
 const DEFAULT_STATE: GameState = {
   foundSpecies: {},
@@ -31,6 +31,10 @@ const DEFAULT_STATE: GameState = {
 const BASE_POINTS = 10;
 const DAILY_POINTS = 10;
 const DUPLICATE_POINTS = 1;
+
+function storageKey(username: string | null): string {
+  return username ? `${STORAGE_KEY_PREFIX}_${username}` : STORAGE_KEY_PREFIX;
+}
 
 function todayString(): string {
   const d = new Date();
@@ -60,9 +64,9 @@ function getRarityMultiplier(rarity: Rarity): number {
   }
 }
 
-function loadState(): GameState {
+function loadState(username: string | null): GameState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(username));
     if (raw) {
       const parsed = JSON.parse(raw) as GameState;
       return migrateState(parsed);
@@ -95,16 +99,44 @@ function migrateState(state: GameState): GameState {
   return { ...state, totalPoints: corrected };
 }
 
-function saveState(state: GameState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function saveState(state: GameState, username: string | null) {
+  localStorage.setItem(storageKey(username), JSON.stringify(state));
 }
 
-export function useGameState() {
-  const [state, setState] = useState<GameState>(loadState);
+export function useGameState(username: string | null) {
+  const [state, setState] = useState<GameState>(() => loadState(username));
+  const prevUsernameRef = useRef(username);
+
+  // Reset local state when the logged-in user changes so one user never inherits another's data
+  useEffect(() => {
+    if (prevUsernameRef.current !== username) {
+      prevUsernameRef.current = username;
+      setState(loadState(username));
+    }
+  }, [username]);
 
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    saveState(state, username);
+  }, [state, username]);
+
+  // Merge server-known species into foundSpecies so alreadyFound is accurate even after
+  // cache clear or first login on a new device.
+  const syncWithServer = useCallback((serverSpeciesIds: string[]) => {
+    setState(prev => {
+      const additions: Record<string, FoundEntry> = {};
+      for (const id of serverSpeciesIds) {
+        if (!prev.foundSpecies[id]) {
+          const species = SPECIES_BY_ID[id];
+          const points = species
+            ? Math.round(BASE_POINTS * getRarityMultiplier(species.rarity))
+            : BASE_POINTS;
+          additions[id] = { speciesId: id, foundAt: 0, points };
+        }
+      }
+      if (Object.keys(additions).length === 0) return prev;
+      return { ...prev, foundSpecies: { ...prev.foundSpecies, ...additions } };
+    });
+  }, []);
 
   const registerSpecies = useCallback(
     (speciesId: string, rarity: Rarity, location?: GpsLocation): { isNew: boolean; points: number; isDailyBonus: boolean; bonusPoints: number } => {
@@ -170,5 +202,5 @@ export function useGameState() {
     setState(DEFAULT_STATE);
   }, []);
 
-  return { state, registerSpecies, hasFound, addPoints, resetProgress };
+  return { state, registerSpecies, hasFound, addPoints, resetProgress, syncWithServer };
 }
