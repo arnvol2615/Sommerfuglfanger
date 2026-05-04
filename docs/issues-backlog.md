@@ -90,7 +90,7 @@ Anbefalt rutine for manuell token-rotasjon:
 5. Trigger: naar 401-feil dukker opp i Supabase Edge Function-logg (se issue #13)
 
 Langsiktig losning:
-- Sok om "app owner"-status paa iNaturalist (https://www.inaturalist.org/oauth/app_owner_application)
+- Sok om "app owner"-status paa iNaturalist (https://www.inaturalist.corg/oauth/app_owner_application)
 - Naar godkjent: implementer automatisk refresh via Resource Owner Password-flyt
   og lagre INAT_CLIENT_ID, INAT_CLIENT_SECRET, INAT_USERNAME, INAT_PASSWORD som Supabase secrets.
 
