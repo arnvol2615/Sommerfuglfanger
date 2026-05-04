@@ -209,24 +209,28 @@ function AppContent() {
         hasExif = false;
       }
       
-      // Call backend to save catch with anti-cheat checks
-      confirmCatch(sessionToken!, species.id, species.rarity, visionResult?.score ?? 0, {
-        lat: location?.lat,
-        lng: location?.lng,
-        hasExif,
-        isDaily: isDailyBonus,
-      }).catch(err => {
+      // Call backend to save catch with anti-cheat checks — must complete before unlocking achievements
+      let catchSavedToBackend = false;
+      try {
+        await confirmCatch(sessionToken!, species.id, species.rarity, visionResult?.score ?? 0, {
+          lat: location?.lat,
+          lng: location?.lng,
+          hasExif,
+          isDaily: isDailyBonus,
+        });
+        catchSavedToBackend = true;
+      } catch (err) {
         console.error('Backend catch save failed:', err);
         // Still show success locally even if backend call fails
-      });
+      }
 
       const familySpecies = SPECIES.filter(s => s.family === species.family);
       const familyTotal = familySpecies.length;
       const alreadyFoundInFamily = familySpecies.filter(s => state.foundSpecies[s.id]).length;
       const familyFound = isNew ? alreadyFoundInFamily + 1 : alreadyFoundInFamily;
 
-      // Check and unlock newly met achievements
-      if (sessionToken) {
+      // Check and unlock newly met achievements — only after catch is confirmed saved on backend
+      if (sessionToken && catchSavedToBackend) {
         const updatedFoundIds = isNew
           ? [...(serverFoundSpeciesIds ?? Object.keys(state.foundSpecies)), species.id]
           : (serverFoundSpeciesIds ?? Object.keys(state.foundSpecies));
